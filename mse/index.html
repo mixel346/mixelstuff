@@ -1,0 +1,834 @@
+<html><head><base href="/" />
+<meta charset="UTF-8">
+<title>Space Explorer</title>
+<style>
+    body { margin: 0; overflow: hidden; }
+    canvas { width: 100%; height: 100%; display: block; }
+    #ui {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        color: #0ff;
+        font-family: 'Courier New', monospace;
+        text-shadow: 0 0 5px #0ff;
+    }
+    .control-hint {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #0ff;
+        font-family: 'Courier New', monospace;
+        text-align: center;
+    }
+    #crosshair {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #0ff;
+        font-size: 24px;
+        pointer-events: none;
+    }
+    #landingMessage {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #0ff;
+        font-family: 'Courier New', monospace;
+        display: none;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+    }
+    #settingsMenu {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.9);
+        padding: 20px;
+        border: 1px solid #0ff;
+        color: #0ff;
+        font-family: 'Courier New', monospace;
+        display: none;
+        z-index: 1000;
+        min-width: 300px;
+    }
+    .control-row {
+        margin: 10px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .control-button {
+        background: rgba(0, 255, 255, 0.1);
+        border: 1px solid #0ff;
+        color: #0ff;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+    .control-button.listening {
+        background: rgba(255, 0, 0, 0.2);
+        border-color: #f00;
+    }
+    #credits {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        color: #0ff;
+        font-family: 'Courier New', monospace;
+        text-shadow: 0 0 5px #0ff;
+    }
+    #startPrompt {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #0ff;
+        font-family: 'Courier New', monospace;
+        text-align: center;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 20px;
+        border-radius: 10px;
+        pointer-events: none;
+    }
+    #blackOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: black;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.5s ease;
+    }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+<div id="ui">
+    Speed: <span id="speed">0</span> km/s<br>
+    Position: <span id="position">0, 0, 0</span>
+</div>
+<div class="control-hint">
+    Press M for settings<br>
+    Press P to unlock mouse
+</div>
+<div id="crosshair">+</div>
+<div id="landingMessage">
+    Press SPACE to take off
+</div>
+<div id="settingsMenu">
+    <h2 style="text-align: center; margin-top: 0;">Settings</h2>
+    <div class="control-row">
+        Forward: <button class="control-button" data-action="forward">W</button>
+    </div>
+    <div class="control-row">
+        Backward: <button class="control-button" data-action="backward">S</button>
+    </div>
+    <div class="control-row">
+        Left: <button class="control-button" data-action="left">A</button>
+    </div>
+    <div class="control-row">
+        Right: <button class="control-button" data-action="right">D</button>
+    </div>
+    <div class="control-row">
+        Up: <button class="control-button" data-action="up">E</button>
+    </div>
+    <div class="control-row">
+        Down: <button class="control-button" data-action="down">Q</button>  
+    </div>
+    <div class="control-row">
+        Boost: <button class="control-button" data-action="boost">SHIFT</button>
+    </div>
+    <div class="control-row">
+        Show UI: <button class="control-button" data-action="toggleUI">ON</button>
+    </div>
+    <div class="control-row">
+        UI Color: <input type="color" id="uiColorPicker" value="#00ffff">
+    </div>
+    <div style="text-align: center; margin-top: 20px;">
+        <button class="control-button" onclick="toggleSettings()">Close</button>
+    </div>
+</div>
+<div id="credits">
+    Created by Mixel346 with websim.ai
+</div>
+<div id="startPrompt">
+    Click anywhere to begin
+</div>
+<div id="blackOverlay"></div>
+<script>
+let scene, camera, renderer, ship;
+let velocity = new THREE.Vector3();
+let speed = 0;
+let boostSpeed = 0;
+const MAX_SPEED = 50;
+const BOOST_MULTIPLIER = 2; 
+const ACCELERATION = 0.25;
+const DECELERATION = 0.98;
+let rotationX = 0;
+let rotationY = 0;
+const BOUNDARY = 10000; 
+let solarSystems = [];
+let isLanded = false;
+let currentPlanet = null;
+let raycaster = new THREE.Raycaster();
+let mouse = new THREE.Vector2();
+let aiShips = [];
+let uiVisible = true;
+
+// Control mapping system
+let controls = {
+    forward: 'w',
+    backward: 's',
+    left: 'a',
+    right: 'd',
+    up: 'e',
+    down: 'q',
+    boost: 'shift'
+};
+
+let listeningForKey = null;
+let uiColor = '#00ffff';
+
+function toggleSettings() {
+    const menu = document.getElementById('settingsMenu');
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+function toggleUI() {
+    uiVisible = !uiVisible;
+    const elements = ['ui', 'control-hint', 'crosshair', 'credits'];
+    elements.forEach(id => {
+        const element = document.getElementById(id) || document.querySelector('.' + id);
+        if (element) {
+            element.style.opacity = uiVisible ? '1' : '0';
+        }
+    });
+    const uiButton = document.querySelector('[data-action="toggleUI"]');
+    if (uiButton) {
+        uiButton.textContent = uiVisible ? 'ON' : 'OFF';
+    }
+}
+
+function updateControlButton(action, key) {
+    const button = document.querySelector(`[data-action="${action}"]`);
+    button.textContent = key.toUpperCase();
+    button.classList.remove('listening');
+}
+
+function setupControlListeners() {
+    document.querySelectorAll('.control-button[data-action]').forEach(button => {
+        button.addEventListener('click', () => {
+            if (button.dataset.action === 'toggleUI') {
+                toggleUI();
+                return;
+            }
+            if (listeningForKey === button.dataset.action) {
+                listeningForKey = null;
+                button.classList.remove('listening');
+                return;
+            }
+            document.querySelectorAll('.control-button').forEach(b => 
+                b.classList.remove('listening'));
+            button.classList.add('listening');
+            listeningForKey = button.dataset.action;
+        });
+    });
+}
+
+function updateUIColor(color) {
+    uiColor = color;
+    const elements = document.querySelectorAll('#ui, .control-hint, #crosshair, #credits, #settingsMenu, .control-button');
+    elements.forEach(el => {
+        el.style.color = color;
+        if (el.classList.contains('control-button') || el.id === 'settingsMenu') {
+            el.style.borderColor = color;
+        }
+    });
+
+    // Update text-shadow for elements that have it
+    const shadowElements = document.querySelectorAll('#ui, #credits');
+    shadowElements.forEach(el => {
+        el.style.textShadow = `0 0 5px ${color}`;
+    });
+}
+
+// Add mouse lock toggle function
+function toggleMouseLock() {
+    if (document.pointerLockElement === renderer.domElement) {
+        document.exitPointerLock();
+    } else {
+        renderer.domElement.requestPointerLock();
+    }
+}
+
+// Create a star
+function createStar() {
+    const starGeometry = new THREE.SphereGeometry(50, 32, 32);
+    const starMaterial = new THREE.MeshBasicMaterial({
+        color: 0xFFFFFF,
+        transparent: true,
+        opacity: 0.8
+    });
+    return new THREE.Mesh(starGeometry, starMaterial);
+}
+
+// Replace the createPlanet function with this enhanced version
+function createPlanet(radius, orbitRadius) {
+    const hue = Math.random();
+    const saturation = 0.5 + Math.random() * 0.5;
+    const lightness = 0.3 + Math.random() * 0.4;
+    const color = new THREE.Color().setHSL(hue, saturation, lightness);
+    
+    const planetGeometry = new THREE.SphereGeometry(radius, 64, 64);
+    const atmosphereColor = new THREE.Color().setHSL((hue + 0.1) % 1, saturation * 0.8, lightness * 1.2);
+    
+    const planetMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+            baseColor: { value: color },
+            atmosphereColor: { value: atmosphereColor },
+            time: { value: 0 }
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            varying vec3 vNormal;
+            void main() {
+                vUv = uv;
+                vNormal = normalize(normalMatrix * normal);
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+        fragmentShader: `
+            uniform vec3 baseColor;
+            uniform vec3 atmosphereColor;
+            uniform float time;
+            varying vec2 vUv;
+            varying vec3 vNormal;
+            
+            float random(vec2 st) {
+                return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+            }
+            
+            void main() {
+                vec2 pos = vUv * 8.0;
+                float pattern = random(pos) * 0.15;
+                
+                float atmosphere = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 2.0);
+                
+                vec3 finalColor = mix(baseColor, vec3(1.0), pattern);
+                finalColor = mix(finalColor, atmosphereColor, atmosphere * 0.5);
+                
+                gl_FragColor = vec4(finalColor, 1.0);
+            }
+        `
+    });
+
+    const planet = new THREE.Mesh(planetGeometry, planetMaterial);
+    planet.orbitRadius = orbitRadius;
+    planet.orbitSpeed = 0.001 + Math.random() * 0.002;
+    planet.angle = Math.random() * Math.PI * 2;
+    planet.isPlanet = true;
+    
+    planet.rotationSpeed = (Math.random() * 0.002) + 0.001;
+    
+    return planet;
+}
+
+// Create a solar system
+function createSolarSystem(position) {
+    const system = new THREE.Group();
+    const star = createStar();
+    system.add(star);
+
+    const planetCount = 2 + Math.floor(Math.random() * 3); // Changed to 2-4 planets per system
+    for(let i = 0; i < planetCount; i++) {
+        const radius = 15 + Math.random() * 20;
+        const orbitRadius = 200 + i * 75 + Math.random() * 50; // Adjusted spacing
+        const planet = createPlanet(radius, orbitRadius);
+        system.add(planet);
+    }
+
+    system.position.copy(position);
+    return system;
+}
+
+// Create an AI ship
+function createAIShip() {
+    const shipGeometry = new THREE.ConeGeometry(4, 16, 8);
+    const color = new THREE.Color().setHSL(Math.random(), 0.7, 0.5);
+    const shipMaterial = new THREE.MeshBasicMaterial({ color: color });
+    const aiShip = new THREE.Mesh(shipGeometry, shipMaterial);
+    
+    aiShip.position.set(
+        (Math.random() - 0.5) * 9000,
+        (Math.random() - 0.5) * 9000,
+        (Math.random() - 0.5) * 9000
+    );
+    
+    aiShip.velocity = new THREE.Vector3(
+        (Math.random() - 0.5) * 2,
+        (Math.random() - 0.5) * 2,
+        (Math.random() - 0.5) * 2
+    ).normalize().multiplyScalar(Math.random() * 10 + 5);
+    
+    return aiShip;
+}
+
+// Create a black hole
+function createBlackHole() {
+    const blackHoleGroup = new THREE.Group();
+    
+    // Event horizon (black sphere)
+    const blackHoleGeometry = new THREE.SphereGeometry(100, 32, 32);
+    const blackHoleMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0x000000,
+        transparent: true,
+        opacity: 0.95
+    });
+    const blackHole = new THREE.Mesh(blackHoleGeometry, blackHoleMaterial);
+    
+    // White outline
+    const outlineGeometry = new THREE.SphereGeometry(102, 32, 32);
+    const outlineMaterial = new THREE.MeshBasicMaterial({
+        color: 0xFFFFFF,
+        transparent: true,
+        opacity: 0.3,
+        side: THREE.BackSide
+    });
+    const outline = new THREE.Mesh(outlineGeometry, outlineMaterial);
+    
+    // Enhanced accretion disk with gradient from white to pale orange
+    const diskGeometry = new THREE.RingGeometry(120, 300, 64);
+    const diskMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+            time: { value: 0 }
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+        fragmentShader: `
+            uniform float time;
+            varying vec2 vUv;
+            
+            void main() {
+                float t = time * 0.5;
+                vec2 uv = vUv;
+                float angle = atan(uv.y, uv.x) + t;
+                
+                // Spiral and rings pattern
+                float spiral = sin(angle * 20.0 + t * 2.0) * 0.5 + 0.5;
+                float rings = sin(length(uv) * 30.0 - t * 3.0) * 0.5 + 0.5;
+                float pattern = mix(spiral, rings, 0.5);
+                
+                // Create gradient from white to pale orange with less saturation
+                vec3 paleOrange = vec3(1.0, 0.8, 0.6); // Much less saturated orange
+                vec3 white = vec3(1.0);
+                vec3 color = mix(paleOrange, white, pattern);
+                
+                // High base opacity
+                float alpha = mix(0.9, 1.0, pattern);
+                gl_FragColor = vec4(color, alpha);
+            }
+        `,
+        transparent: true,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+    });
+    const accretionDisk = new THREE.Mesh(diskGeometry, diskMaterial);
+    accretionDisk.rotation.x = Math.PI / 4;
+    
+    blackHoleGroup.add(blackHole);
+    blackHoleGroup.add(outline);
+    blackHoleGroup.add(accretionDisk);
+    
+    // Replace fixed position with random position
+    blackHoleGroup.position.set(
+        (Math.random() - 0.5) * 18000,
+        (Math.random() - 0.5) * 18000,
+        (Math.random() - 0.5) * 18000
+    );
+    blackHoleGroup.isBlackHole = true;
+    
+    return blackHoleGroup;
+}
+
+function init() {
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 20000);
+    renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Add initial click handler
+    const startPrompt = document.getElementById('startPrompt');
+    renderer.domElement.addEventListener('click', function firstClick() {
+        renderer.domElement.requestPointerLock();
+        startPrompt.style.display = 'none';
+        renderer.domElement.removeEventListener('click', firstClick);
+    });
+    
+    for(let i = 0; i < 30; i++) { // Increased from previous amount
+        const position = new THREE.Vector3(
+            (Math.random() - 0.5) * 18000,
+            (Math.random() - 0.5) * 18000,
+            (Math.random() - 0.5) * 18000
+        );
+        const solarSystem = createSolarSystem(position);
+        scene.add(solarSystem);
+        solarSystems.push(solarSystem);
+    }
+
+    const starsGeometry = new THREE.BufferGeometry();
+    const starPositions = [];
+    for(let i = 0; i < 2000; i++) {
+        const x = (Math.random() - 0.5) * 20000;
+        const y = (Math.random() - 0.5) * 20000;
+        const z = (Math.random() - 0.5) * 20000;
+        starPositions.push(x, y, z);
+    }
+    starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
+    const starsMaterial = new THREE.PointsMaterial({
+        color: 0xFFFFFF,
+        size: 3,
+        transparent: true,
+        opacity: 0.8,
+        sizeAttenuation: true
+    });
+    const starField = new THREE.Points(starsGeometry, starsMaterial);
+    scene.add(starField);
+
+    // Add distant stars beyond the boundary
+    const distantStarsGeometry = new THREE.BufferGeometry();
+    const distantStarPositions = [];
+    for(let i = 0; i < 1000; i++) { // Reduced from 5000 to 1000 stars
+        // Create stars in a hollow sphere beyond the boundary
+        const radius = BOUNDARY * 1.5 + (Math.random() * BOUNDARY); // Places stars between 1.5x and 2.5x the boundary
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos((Math.random() * 2) - 1);
+        
+        const x = radius * Math.sin(phi) * Math.cos(theta);
+        const y = radius * Math.sin(phi) * Math.sin(theta);
+        const z = radius * Math.cos(phi);
+        
+        distantStarPositions.push(x, y, z);
+    }
+    distantStarsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(distantStarPositions, 3));
+    const distantStarsMaterial = new THREE.PointsMaterial({
+        color: 0xCCCCFF,  // Slightly blue-ish to create depth
+        size: 3,
+        transparent: true,
+        opacity: 0.8,
+        sizeAttenuation: false  // This prevents the size from changing with distance
+    });
+    const distantStarField = new THREE.Points(distantStarsGeometry, distantStarsMaterial);
+    scene.add(distantStarField);
+
+    ship = new THREE.Group();
+    scene.add(ship);
+
+    camera.position.set(0, 0, 0);
+    ship.add(camera);
+
+    for(let i = 0; i < 15; i++) {
+        const aiShip = createAIShip();
+        scene.add(aiShip);
+        aiShips.push(aiShip);
+    }
+
+    // Add black hole to the scene
+    const blackHole = createBlackHole();
+    scene.add(blackHole);
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keyup', onKeyUp);
+    setupControlListeners();
+
+    // Add event listener for color picker
+    document.getElementById('uiColorPicker').addEventListener('input', (e) => {
+        updateUIColor(e.target.value);
+    });
+}
+
+function landOnPlanet(planet) {
+    isLanded = true;
+    currentPlanet = planet;
+    
+    const planetWorldPos = new THREE.Vector3();
+    planet.getWorldPosition(planetWorldPos);
+    const landingOffset = planet.geometry.parameters.radius + 2;
+    
+    ship.position.copy(planetWorldPos);
+    ship.position.y += landingOffset;
+
+    speed = 0;
+
+    document.getElementById('landingMessage').style.display = 'block';
+}
+
+function takeOff() {
+    isLanded = false;
+    currentPlanet = null;
+    document.getElementById('landingMessage').style.display = 'none';
+    
+    const direction = new THREE.Vector3();
+    camera.getWorldDirection(direction);
+    ship.position.add(direction.multiplyScalar(15));
+    ship.position.y += 15;
+    
+    camera.rotation.set(0, 0, 0);
+    ship.rotation.set(0, 0, 0);
+    rotationX = 0;
+    rotationY = 0;
+    
+    speed = 5;
+}
+
+const keys = {};
+function onKeyDown(event) {
+    const key = event.key.toLowerCase();
+    
+    if (key === 'm') {
+        toggleSettings();
+        return;
+    }
+    
+    if (key === 'p') {
+        toggleMouseLock();
+        return;
+    }
+    
+    if (listeningForKey) {
+        controls[listeningForKey] = key;
+        updateControlButton(listeningForKey, key);
+        listeningForKey = null;
+        return;
+    }
+    
+    Object.entries(controls).forEach(([action, controlKey]) => {
+        if (key === controlKey.toLowerCase()) {
+            keys[action] = true;
+        }
+    });
+    
+    if (isLanded && key === ' ') {
+        takeOff();
+    }
+}
+
+function onKeyUp(event) {
+    const key = event.key.toLowerCase();
+    
+    Object.entries(controls).forEach(([action, controlKey]) => {
+        if (key === controlKey.toLowerCase()) {
+            keys[action] = false;
+        }
+    });
+}
+
+function onMouseMove(event) {
+    if (document.pointerLockElement === renderer.domElement) {
+        rotationY -= event.movementX * 0.002;
+        rotationX = Math.max(-Math.PI/2, Math.min(Math.PI/2, rotationX - event.movementY * 0.002));
+        
+        ship.rotation.y = rotationY;
+        camera.rotation.x = rotationX;
+    }
+}
+
+function clampPosition(position) {
+    position.x = Math.max(-BOUNDARY, Math.min(BOUNDARY, position.x));
+    position.y = Math.max(-BOUNDARY, Math.min(BOUNDARY, position.y));
+    position.z = Math.max(-BOUNDARY, Math.min(BOUNDARY, position.z));
+    return position;
+}
+
+function updateShip() {
+    if (isLanded) {
+        return;
+    }
+
+    const direction = new THREE.Vector3();
+    camera.getWorldDirection(direction);
+    
+    let targetSpeedMultiplier = keys['boost'] ? BOOST_MULTIPLIER : 1;
+    boostSpeed = keys['boost'] ? BOOST_MULTIPLIER : Math.max(1, boostSpeed * 0.98); // Smooth deceleration
+    const speedMultiplier = Math.max(targetSpeedMultiplier, boostSpeed);
+    
+    if (keys['forward']) speed = Math.min(speed + ACCELERATION * speedMultiplier, MAX_SPEED * speedMultiplier);
+    if (keys['backward']) speed = Math.max(speed - ACCELERATION * speedMultiplier, -MAX_SPEED / 2 * speedMultiplier);
+    if (!keys['forward'] && !keys['backward']) speed *= DECELERATION;
+
+    if (speed !== 0) {
+        const moveVector = direction.multiplyScalar(speed * 0.1);
+        ship.position.add(moveVector);
+    }
+
+    if (keys['left'] || keys['right']) {
+        const sideDirection = new THREE.Vector3();
+        camera.getWorldDirection(sideDirection);
+        const sideways = new THREE.Vector3(-sideDirection.z, 0, sideDirection.x).normalize();
+        const lateralSpeed = 2.5; // Increased from implicit 1
+        if (keys['left']) ship.position.add(sideways.multiplyScalar(-lateralSpeed));
+        if (keys['right']) ship.position.add(sideways.multiplyScalar(lateralSpeed));
+    }
+    
+    if (keys['up']) ship.position.y += 2.5; // Increased from 1
+    if (keys['down']) ship.position.y -= 2.5; // Increased from 1
+
+    let planets = [];
+    solarSystems.forEach(system => {
+        system.children.forEach(child => {
+            if (child.isPlanet) planets.push(child);
+        });
+    });
+
+    const shipPosition = new THREE.Vector3();
+    ship.getWorldPosition(shipPosition);
+
+    planets.forEach(planet => {
+        const planetWorldPos = new THREE.Vector3();
+        planet.getWorldPosition(planetWorldPos);
+        const distance = shipPosition.distanceTo(planetWorldPos);
+        const collisionThreshold = planet.geometry.parameters.radius + 5;
+
+        if (distance < collisionThreshold) {
+            landOnPlanet(planet);
+        }
+    });
+
+    ship.position.copy(clampPosition(ship.position));
+
+    document.getElementById('speed').textContent = Math.abs(speed).toFixed(1);
+    document.getElementById('position').textContent = 
+        `${ship.position.x.toFixed(0)}, ${ship.position.y.toFixed(0)}, ${ship.position.z.toFixed(0)}`;
+}
+
+function updatePlanets() {
+    solarSystems.forEach(system => {
+        system.children.forEach((object, index) => {
+            if (index > 0) { 
+                object.angle += object.orbitSpeed;
+                object.position.x = Math.cos(object.angle) * object.orbitRadius;
+                object.position.z = Math.sin(object.angle) * object.orbitRadius;
+                
+                object.rotation.y += object.rotationSpeed;
+
+                if (object.material.uniforms && object.material.uniforms.time) {
+                    object.material.uniforms.time.value += 0.01;
+                }
+            }
+        });
+    });
+
+    if (isLanded && currentPlanet) {
+        const planetWorldPos = new THREE.Vector3();
+        currentPlanet.getWorldPosition(planetWorldPos);
+        const landingOffset = currentPlanet.geometry.parameters.radius + 2;
+        ship.position.copy(planetWorldPos);
+        ship.position.y += landingOffset;
+    }
+}
+
+function updateAIShips() {
+    aiShips.forEach(ship => {
+        ship.position.add(ship.velocity);
+        
+        const direction = ship.velocity.clone().normalize();
+        ship.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+        
+        if (Math.abs(ship.position.x) > BOUNDARY) ship.position.x *= -0.99;
+        if (Math.abs(ship.position.y) > BOUNDARY) ship.position.y *= -0.99;
+        if (Math.abs(ship.position.z) > BOUNDARY) ship.position.z *= -0.99;
+        
+        if (Math.random() < 0.01) {
+            ship.velocity.add(new THREE.Vector3(
+                (Math.random() - 0.5) * 0.25,
+                (Math.random() - 0.5) * 0.25,
+                (Math.random() - 0.5) * 0.25
+            ));
+            ship.velocity.normalize().multiplyScalar(Math.random() * 10 + 5);
+        }
+    });
+}
+
+function updateBlackHole() {
+    const blackHole = scene.children.find(child => child.isBlackHole);
+    if (!blackHole) return;
+    
+    const blackOverlay = document.getElementById('blackOverlay');
+    const accretionDisk = blackHole.children[2];
+    accretionDisk.material.uniforms.time.value += 0.01;
+    
+    const blackHolePos = blackHole.position;
+    const gravityRadius = 2000; // Increased from 1000 - range of gravitational effect
+    const maxPull = 7; // Increased from 5 - maximum pull strength
+    const eventHorizonRadius = 150; // Distance where screen goes black
+    
+    // Effect on player ship
+    if (!isLanded) {
+        const distanceToBlackHole = ship.position.distanceTo(blackHolePos);
+        
+        // Update overlay opacity based on distance
+        const opacity = Math.max(0, 1 - (distanceToBlackHole - 100) / (eventHorizonRadius - 100));
+        blackOverlay.style.opacity = opacity;
+        
+        if (distanceToBlackHole < gravityRadius) {
+            // Modified pull strength calculation to be more exponential
+            const pullStrength = Math.pow(1 - distanceToBlackHole / gravityRadius, 2) * maxPull;
+            const direction = blackHolePos.clone().sub(ship.position).normalize();
+            ship.position.add(direction.multiplyScalar(pullStrength));
+            
+            // If too close, reset ship position
+            if (distanceToBlackHole < 100) {
+                ship.position.set(
+                    (Math.random() - 0.5) * 18000,
+                    (Math.random() - 0.5) * 18000,
+                    (Math.random() - 0.5) * 18000
+                );
+                speed = 0;
+            }
+        }
+    }
+    
+    // Effect on AI ships
+    aiShips.forEach(aiShip => {
+        const distanceToBlackHole = aiShip.position.distanceTo(blackHolePos);
+        if (distanceToBlackHole < gravityRadius) {
+            const pullStrength = Math.pow(1 - distanceToBlackHole / gravityRadius, 2) * maxPull;
+            const direction = blackHolePos.clone().sub(aiShip.position).normalize();
+            aiShip.position.add(direction.multiplyScalar(pullStrength));
+        }
+    });
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    updateShip();
+    updatePlanets();
+    updateAIShips();
+    updateBlackHole(); // Add this line
+    renderer.render(scene, camera);
+}
+
+init();
+animate();
+
+window.addEventListener('resize', function() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body></html>
