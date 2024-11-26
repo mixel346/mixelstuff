@@ -1,38 +1,159 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <link rel="stylesheet" href="style.css">
-    <link rel="shortcut icon" type="x-icon" href="M2.png">
-  </head>
-  <body> 
-    <div class="topnav">
-      <a class="active" href="index.html"><img src="icons8-list.png"></a>
-      <a href="about.html"><img src="icons8-about.png"></a>
-      <a href="downloads.html"><img src="icons8-download.png"></a>
-      <a href="gamepage.html"><img src="icons8-games.png"></a>
-      <a href="https://tinyurl.com/mixgamediscord"><img src="icons8-discord.png"></a>
-      <a href="https://mixel346.itch.io"><img src="icons8-itchio.png"></a>
-      <a href=https://youtube.com/@mixel346><img src="icons8-youtube.png"></a>
-      <a href="https://twitch.tv/mixel346"><img src="icons8-twitch.png"></a>
-      <a href="https://github.com/mixel346/mixelstuff"><img src="icons8-github.png"></a>
-      <a href="https://namemc.com/profile/Mixel346.2"><img src="icons8-minecraft.png"></a>
-    </div>
-    <hr>
-    <title>MixelStuff - About/Faq</title>
-    
-  <h1> Mixel </h1>
-  <h2>Game Maker Youtuber</h2>
-  <hr>
-  <h2>Facts:</h2>
-  <h2>1. I can solve a Rubik's Cube + many other puzzles
-  </h2>
-  <h2>2. I started my youtube channel in November 2017</h2>
-  <h2>3. The reason i am called Mixel346 is because i collected every "mixel" lego set that</h2>
-  <h2>had stopped being produced, and the 346 is just for no reason and serves no purpose.</h2>
-  <h2>4. The first ever high-effort game i ever released was called "raise a buster" and was very scuffed and was kind of broken</h2>
-  <h2>5. i released a game called "Idle Brawlers" on Itch.io for a short period of time before taking it down because of problems i had with development and because of a game-breaking bug.</h2>
-  <hr>
+<html><head><link rel="shortcut icon" type="x-icon" href="M2.png"><base href="." /><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Mixelstuff - Links</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-    <a target="_blank" href="https://icons8.com">Icons By Icons8</a>
-  </body>
-</html>
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #FFF3E0;
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #FF9800;
+    padding: 2rem;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    animation: slideIn 0.5s ease-out;
+}
+
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    background: linear-gradient(135deg, #FFA726, #FB8C00);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.button-container {
+    margin-top: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    z-index: 2;
+}
+
+.game-button {
+    padding: 1.5rem 2.5rem;
+    font-size: 1.4rem;
+    background-color: white;
+    color: black;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 350px;
+    text-align: center;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    text-decoration: none;
+    display: inline-block;
+}
+
+.game-button:hover {
+    background-color: #f0f0f0;
+    transform: scale(1.05);
+}
+
+.top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 170px;
+    background-color: #808080;
+    z-index: 1;
+}
+
+.sidebar h2 {
+    color: white;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid rgba(255,255,255,0.3);
+    padding-bottom: 0.5rem;
+}
+
+.sidebar ul {
+    list-style: none;
+}
+
+.sidebar ul li {
+    margin: 0.8rem 0;
+}
+
+.sidebar ul li a {
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: block;
+    padding: 0.5rem;
+    border-radius: 4px;
+}
+
+.sidebar ul li a:hover {
+    background-color: rgba(255,255,255,0.2);
+    transform: translateX(5px);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.content-header {
+    color: white;
+    margin-bottom: 2rem;
+}
+
+.content-card {
+    background-color: rgba(255,255,255,0.9);
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+}
+
+.logo-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    max-width: 400px;
+    height: auto;
+    z-index: 2;
+}
+</style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Navigation</h2>
+        <ul>
+            <li><a href="https://mixelstuff.com/index.html">Home</a></li>
+            <li><a href="https://mixelstuff.com/gamepage.html">Games</a></li>
+            <li><a href="https://tinyurl.com/mixgamediscord">Discord</a></li>
+            <li><a href="https://youtube.com/@mixel346">Youtube</a></li>
+            <li><a href="https://mixelstuff.com/about.html">Other Links</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="top-bar"></div>
+        <img class="logo-image" src="https://mixelstuff.com/Mixel.png" alt="Mixel logo" width="400" height="400">
+        <div class="button-container">
+            <a href="https://twitch.tv/mixel346" class="game-button">Twitch (not used)</a>
+            <a href="https://mixel346.itch.io" class="game-button">Itch.io (not used)</a>
+            <a href="https://github.com/mixel346" class="game-button">Github</a>
+            <a href="https://namemc.com/profile/mixel346" class="game-button">NameMC</a>
+        </div>
+    </div>
+</body></html>
