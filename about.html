@@ -1,162 +1,186 @@
-<html><head><link rel="shortcut icon" type="x-icon" href="M-XICON.png"><base href="." /><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Mixelstuff - Links</title>
-<style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+<html>
+  <head>
+    <link rel="shortcut icon" type="x-icon" href="M-XICON.png" />
+    <base href="." />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mixelstuff - Links</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #FFF3E0;
-    display: flex;
-    min-height: 100vh;
-}
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #fff3e0;
+        display: flex;
+        min-height: 100vh;
+      }
 
-.sidebar {
-    width: 250px;
-    background-color: #b06407;
-    padding: 2rem;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-    animation: slideIn 0.5s ease-out;
-}
+      .sidebar {
+        width: 250px;
+        background-color: #b06407;
+        padding: 2rem;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        animation: slideIn 0.5s ease-out;
+      }
 
-.main-content {
-    flex: 1;
-    padding: 2rem;
-    background: linear-gradient(135deg, #FFA726, #FB8C00);
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
+      .main-content {
+        flex: 1;
+        padding: 2rem;
+        background: linear-gradient(135deg, #ffa726, #fb8c00);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
 
-.button-container {
-    margin-top: 200px;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    z-index: 2;
-}
+      .button-container {
+        margin-top: 200px;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        z-index: 2;
+      }
 
-.game-button {
-    padding: 1.5rem 2.5rem;
-    font-size: 1.4rem;
-    background-color: white;
-    color: black;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    width: 350px;
-    text-align: center;
-    font-weight: bold;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    text-decoration: none;
-    display: inline-block;
-}
+      .game-button {
+        padding: 1.5rem 2.5rem;
+        font-size: 1.4rem;
+        background-color: white;
+        color: black;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 350px;
+        text-align: center;
+        font-weight: bold;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        text-decoration: none;
+        display: inline-block;
+      }
 
-.game-button:hover {
-    background-color: #f0f0f0;
-    transform: scale(1.05);
-}
+      .game-button:hover {
+        background-color: #f0f0f0;
+        transform: scale(1.05);
+      }
 
-.top-bar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 170px;
-    background-color: #808080;
-    z-index: 1;
-}
+      .top-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 170px;
+        background-color: #808080;
+        z-index: 1;
+      }
 
-.sidebar h2 {
-    color: white;
-    margin-bottom: 1rem;
-    border-bottom: 2px solid rgba(255,255,255,0.3);
-    padding-bottom: 0.5rem;
-}
+      .sidebar h2 {
+        color: white;
+        margin-bottom: 1rem;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+        padding-bottom: 0.5rem;
+      }
 
-.sidebar ul {
-    list-style: none;
-}
+      .sidebar ul {
+        list-style: none;
+      }
 
-.sidebar ul li {
-    margin: 0.8rem 0;
-}
+      .sidebar ul li {
+        margin: 0.8rem 0;
+      }
 
-.sidebar ul li a {
-    color: white;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    display: block;
-    padding: 0.5rem;
-    border-radius: 4px;
-}
+      .sidebar ul li a {
+        color: white;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: block;
+        padding: 0.5rem;
+        border-radius: 4px;
+      }
 
-.sidebar ul li a:hover {
-    background-color: rgba(255,255,255,0.2);
-    transform: translateX(5px);
-}
+      .sidebar ul li a:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        transform: translateX(5px);
+      }
 
-@keyframes slideIn {
-    from {
-        transform: translateX(-100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
+      @keyframes slideIn {
+        from {
+          transform: translateX(-100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
 
-.content-header {
-    color: white;
-    margin-bottom: 2rem;
-}
+      .content-header {
+        color: white;
+        margin-bottom: 2rem;
+      }
 
-.content-card {
-    background-color: rgba(255,255,255,0.9);
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    margin-bottom: 1rem;
-}
+      .content-card {
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+      }
 
-.logo-image {
-    position: absolute;
-    top: 0;
-    left: 0;
-    max-width: 400px;
-    height: auto;
-    z-index: 2;
-}
-</style>
-</head>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5252039909284209"
-     crossorigin="anonymous"></script>
-<body>
+      .logo-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        max-width: 400px;
+        height: auto;
+        z-index: 2;
+      }
+    </style>
+  </head>
+  <script
+    async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5252039909284209"
+    crossorigin="anonymous"
+  ></script>
+  <body>
     <div class="sidebar">
-        <h2>Navigation</h2>
-        <ul>
-            <li><a href="https://mixelstuff.com/index.html">Home</a></li>
-            <li><a href="https://mixelstuff.com/gamepage.html">Games</a></li>
-            <li><a href="https://tinyurl.com/mixgamediscord">Discord</a></li>
-            <li><a href="https://youtube.com/@mixel346">Youtube</a></li>
-            <li><a href="https://mixelstuff.com/about.html">Other Links</a></li>
-        </ul>
+      <h2>Navigation</h2>
+      <ul>
+        <li><a href="https://mixelstuff.com/index.html">Home</a></li>
+        <li><a href="https://mixelstuff.com/gamepage.html">Games</a></li>
+        <li><a href="https://tinyurl.com/mixgamediscord">Discord</a></li>
+        <li><a href="https://youtube.com/@mixel346">Youtube</a></li>
+        <li><a href="https://mixelstuff.com/about.html">Other Links</a></li>
+      </ul>
     </div>
     <div class="main-content">
-        <div class="top-bar"></div>
-        <img class="logo-image" src="mixellogofinal.png" alt="Mixel logo" width="410" height="410">
-        <div class="button-container">
-            <a href="https://twitch.tv/mixel346" class="game-button">Twitch (not used)</a>
-            <a href="https://mixel346.itch.io" class="game-button">Itch.io (not used)</a>
-            <a href="https://github.com/mixel346" class="game-button">Github</a>
-            <a href="https://namemc.com/profile/mixel346" class="game-button">NameMC</a>
-            <a href="https://websim.ai/@mixel346/profile" class="game-button">Websim.ai</a>
-        </div>
+      <div class="top-bar"></div>
+      <img
+        class="logo-image"
+        src="mixellogofinal.png"
+        alt="Mixel logo"
+        width="410"
+        height="410"
+      />
+      <div class="button-container">
+        <a href="https://twitch.tv/mixel346" class="game-button"
+          >Twitch (not used)</a
+        >
+        <a href="https://mixel346.itch.io" class="game-button"
+          >Itch.io (not used)</a
+        >
+        <a href="https://github.com/mixel346" class="game-button">Github</a>
+        <a href="https://namemc.com/profile/mixel346" class="game-button"
+          >NameMC</a
+        >
+        <a href="https://websim.ai/@mixel346/profile" class="game-button"
+          >Websim.ai</a
+        >
+      </div>
     </div>
-</body></html>
+  </body>
+</html>

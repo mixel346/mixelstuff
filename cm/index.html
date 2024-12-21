@@ -1,617 +1,698 @@
-<html><head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5252039909284209"
-     crossorigin="anonymous"></script>
+<html>
+  <head>
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5252039909284209"
+      crossorigin="anonymous"
+    ></script>
     <base href="." />
-<title>Custom Minesweeper</title>
-<style>
-body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: #f0f0f0;
-}
+    <title>Custom Minesweeper</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: #f0f0f0;
+      }
 
-.controls {
-    margin: 20px;
-    padding: 20px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
+      .controls {
+        margin: 20px;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
 
-.controls input {
-    width: 60px;
-    margin: 0 10px;
-    padding: 5px;
-}
+      .controls input {
+        width: 60px;
+        margin: 0 10px;
+        padding: 5px;
+      }
 
-.time-limit-container {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid #eee;
-}
+      .time-limit-container {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #eee;
+      }
 
-.wrap-options {
-    margin-top: 10px;
-}
+      .wrap-options {
+        margin-top: 10px;
+      }
 
-.game-board {
-    display: grid;
-    gap: 1px;
-    background: #ccc;
-    padding: 35px 35px;  /* Increased padding to make room for labels */
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    position: relative;
-    margin: 20px;
-}
+      .game-board {
+        display: grid;
+        gap: 1px;
+        background: #ccc;
+        padding: 35px 35px; /* Increased padding to make room for labels */
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        position: relative;
+        margin: 20px;
+      }
 
-.cell {
-    width: 30px;
-    height: 30px;
-    background: #e0e0e0;
-    border: 1px solid #999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.2s;
-}
+      .cell {
+        width: 30px;
+        height: 30px;
+        background: #e0e0e0;
+        border: 1px solid #999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.2s;
+      }
 
-.cell:hover {
-    background: #d0d0d0;
-}
+      .cell:hover {
+        background: #d0d0d0;
+      }
 
-.cell.revealed {
-    background: #fff;
-}
+      .cell.revealed {
+        background: #fff;
+      }
 
-.cell.mine {
-    background: #ff0000;
-}
+      .cell.mine {
+        background: #ff0000;
+      }
 
-.cell.flagged {
-    background: #ffd700;
-}
+      .cell.flagged {
+        background: #ffd700;
+      }
 
-.game-info {
-    margin: 20px;
-    font-size: 1.2em;
-}
+      .game-info {
+        margin: 20px;
+        font-size: 1.2em;
+      }
 
-.warning {
-    color: #ff0000;
-    font-weight: bold;
-    margin: 10px 0;
-    display: none;
-}
+      .warning {
+        color: #ff0000;
+        font-weight: bold;
+        margin: 10px 0;
+        display: none;
+      }
 
-.time-warning {
-    color: #ff0000;
-    animation: blink 1s infinite;
-}
+      .time-warning {
+        color: #ff0000;
+        animation: blink 1s infinite;
+      }
 
-@keyframes blink {
-    50% { opacity: 0; }
-}
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
 
-.axis-label {
-    position: absolute;
-    font-size: 12px;
-    color: #666;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+      .axis-label {
+        position: absolute;
+        font-size: 12px;
+        color: #666;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-.x-label {
-    width: 32px;  /* Matches cell width + gap */
-    height: 20px;
-    transform: translateY(-25px); /* Move top labels up */
-}
+      .x-label {
+        width: 32px; /* Matches cell width + gap */
+        height: 20px;
+        transform: translateY(-25px); /* Move top labels up */
+      }
 
-.x-label:nth-of-type(n + 11) {  /* Bottom labels */
-    transform: translateY(5px); /* Move bottom labels down */
-}
+      .x-label:nth-of-type(n + 11) {
+        /* Bottom labels */
+        transform: translateY(5px); /* Move bottom labels down */
+      }
 
-.y-label {
-    width: 20px;
-    height: 32px;  /* Matches cell height + gap */
-    transform: translateX(-25px); /* Move left labels left */
-}
+      .y-label {
+        width: 20px;
+        height: 32px; /* Matches cell height + gap */
+        transform: translateX(-25px); /* Move left labels left */
+      }
 
-.y-label:nth-of-type(n + 11) {  /* Right labels */
-    transform: translateX(5px); /* Move right labels right */
-}
+      .y-label:nth-of-type(n + 11) {
+        /* Right labels */
+        transform: translateX(5px); /* Move right labels right */
+      }
 
-.footer-text {
-    position: fixed;
-    bottom: 10px;
-    left: 10px;
-    font-size: 12px;
-    color: #666;
-    font-family: Arial, sans-serif;
-}
-</style>
-</head>
-<body>
+      .footer-text {
+        position: fixed;
+        bottom: 10px;
+        left: 10px;
+        font-size: 12px;
+        color: #666;
+        font-family: Arial, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
     <h1>Custom Minesweeper</h1>
     <div class="controls">
-        <label>Width: <input type="number" id="width" value="10" min="5" max="30"></label>
-        <label>Height: <input type="number" id="height" value="10" min="5" max="30"></label>
-        <label>Mines: <input type="number" id="mines" value="10" min="1"></label>
-        <div class="time-limit-container">
-            <label><input type="checkbox" id="enableTimeLimit"> Enable Time Limit</label>
-            <label>Time Limit (seconds): <input type="number" id="timeLimit" value="300" min="10" disabled></label>
-        </div>
-        <div class="wrap-options">
-            <label><input type="checkbox" id="wrapX"> Wrap X-Axis</label>
-            <label style="margin-left: 10px;"><input type="checkbox" id="wrapY"> Wrap Y-Axis</label>
-        </div>
-        <div style="margin-top: 10px;">
-            <label>Mine Detection Range: <input type="number" id="detectionRange" value="1" min="1" max="5">
-                <span style="font-size: 0.9em; color: #666;">(Default: 1 = adjacent cells only)</span>
-            </label>
-        </div>
-        <button onclick="window.startGame()">New Game</button>
-        <div id="mineWarning" class="warning">WARNING: The game may glitch out if the map is more than 90% mines</div>
+      <label
+        >Width: <input type="number" id="width" value="10" min="5" max="30"
+      /></label>
+      <label
+        >Height: <input type="number" id="height" value="10" min="5" max="30"
+      /></label>
+      <label
+        >Mines: <input type="number" id="mines" value="10" min="1"
+      /></label>
+      <div class="time-limit-container">
+        <label
+          ><input type="checkbox" id="enableTimeLimit" /> Enable Time
+          Limit</label
+        >
+        <label
+          >Time Limit (seconds):
+          <input type="number" id="timeLimit" value="300" min="10" disabled
+        /></label>
+      </div>
+      <div class="wrap-options">
+        <label><input type="checkbox" id="wrapX" /> Wrap X-Axis</label>
+        <label style="margin-left: 10px"
+          ><input type="checkbox" id="wrapY" /> Wrap Y-Axis</label
+        >
+      </div>
+      <div style="margin-top: 10px">
+        <label
+          >Mine Detection Range:
+          <input type="number" id="detectionRange" value="1" min="1" max="5" />
+          <span style="font-size: 0.9em; color: #666"
+            >(Default: 1 = adjacent cells only)</span
+          >
+        </label>
+      </div>
+      <button onclick="window.startGame()">New Game</button>
+      <div id="mineWarning" class="warning">
+        WARNING: The game may glitch out if the map is more than 90% mines
+      </div>
     </div>
     <div class="game-info">
-        <span>Flags: <span id="flagCount">0</span></span>
-        <span id="regularTimer" style="margin-left: 20px;">Time: <span id="timer">0</span>s</span>
-        <span id="timeRemaining" style="margin-left: 20px; display: none">Time Remaining: <span id="remainingTime">0</span>s</span>
+      <span>Flags: <span id="flagCount">0</span></span>
+      <span id="regularTimer" style="margin-left: 20px"
+        >Time: <span id="timer">0</span>s</span
+      >
+      <span id="timeRemaining" style="margin-left: 20px; display: none"
+        >Time Remaining: <span id="remainingTime">0</span>s</span
+      >
     </div>
     <div id="board" class="game-board"></div>
 
-<script>
-// Global variables
-window.board = [];
-window.revealed = [];
-window.gameOver = false;
-window.timerInterval = null;
-window.startTime = null;
-window.flagsPlaced = 0;
-window.firstClick = true;
-window.timeLimit = null;
-window.remainingTimeInterval = null;
+    <script>
+      // Global variables
+      window.board = [];
+      window.revealed = [];
+      window.gameOver = false;
+      window.timerInterval = null;
+      window.startTime = null;
+      window.flagsPlaced = 0;
+      window.firstClick = true;
+      window.timeLimit = null;
+      window.remainingTimeInterval = null;
 
-// Add time limit toggle handler
-document.getElementById('enableTimeLimit').addEventListener('change', function(e) {
-    document.getElementById('timeLimit').disabled = !e.target.checked;
-    document.getElementById('timeRemaining').style.display = e.target.checked ? 'inline' : 'none';
-    document.getElementById('regularTimer').style.display = e.target.checked ? 'none' : 'inline';
-});
+      // Add time limit toggle handler
+      document
+        .getElementById("enableTimeLimit")
+        .addEventListener("change", function (e) {
+          document.getElementById("timeLimit").disabled = !e.target.checked;
+          document.getElementById("timeRemaining").style.display = e.target
+            .checked
+            ? "inline"
+            : "none";
+          document.getElementById("regularTimer").style.display = e.target
+            .checked
+            ? "none"
+            : "inline";
+        });
 
-// Add mine count checker
-function checkMinePercentage() {
-    const width = parseInt(document.getElementById('width').value);
-    const height = parseInt(document.getElementById('height').value);
-    const mines = parseInt(document.getElementById('mines').value);
-    const totalCells = width * height;
-    const minePercentage = (mines / totalCells) * 100;
-    
-    const warningElement = document.getElementById('mineWarning');
-    warningElement.style.display = minePercentage >= 90 ? 'block' : 'none';
-}
+      // Add mine count checker
+      function checkMinePercentage() {
+        const width = parseInt(document.getElementById("width").value);
+        const height = parseInt(document.getElementById("height").value);
+        const mines = parseInt(document.getElementById("mines").value);
+        const totalCells = width * height;
+        const minePercentage = (mines / totalCells) * 100;
 
-// Add event listeners for input changes
-document.getElementById('width').addEventListener('input', checkMinePercentage);
-document.getElementById('height').addEventListener('input', checkMinePercentage);
-document.getElementById('mines').addEventListener('input', checkMinePercentage);
+        const warningElement = document.getElementById("mineWarning");
+        warningElement.style.display = minePercentage >= 90 ? "block" : "none";
+      }
 
-function createBoardLabels(width, height) {
-    const boardElement = document.getElementById('board');
-    const wrapX = document.getElementById('wrapX').checked;
-    const wrapY = document.getElementById('wrapY').checked;
-    
-    // Remove existing labels
-    const existingLabels = document.querySelectorAll('.axis-label');
-    existingLabels.forEach(label => label.remove());
-    
-    if (wrapX) {
-        // Create X-axis labels (top)
-        for (let x = 0; x < width; x++) {
-            const label = document.createElement('div');
-            label.className = 'axis-label x-label';
+      // Add event listeners for input changes
+      document
+        .getElementById("width")
+        .addEventListener("input", checkMinePercentage);
+      document
+        .getElementById("height")
+        .addEventListener("input", checkMinePercentage);
+      document
+        .getElementById("mines")
+        .addEventListener("input", checkMinePercentage);
+
+      function createBoardLabels(width, height) {
+        const boardElement = document.getElementById("board");
+        const wrapX = document.getElementById("wrapX").checked;
+        const wrapY = document.getElementById("wrapY").checked;
+
+        // Remove existing labels
+        const existingLabels = document.querySelectorAll(".axis-label");
+        existingLabels.forEach((label) => label.remove());
+
+        if (wrapX) {
+          // Create X-axis labels (top)
+          for (let x = 0; x < width; x++) {
+            const label = document.createElement("div");
+            label.className = "axis-label x-label";
             label.textContent = x;
             label.style.left = `${x * 32 + 35}px`; // Account for padding and gap
             boardElement.appendChild(label);
-            
+
             // Create X-axis labels (bottom)
-            const bottomLabel = document.createElement('div');
-            bottomLabel.className = 'axis-label x-label';
+            const bottomLabel = document.createElement("div");
+            bottomLabel.className = "axis-label x-label";
             bottomLabel.textContent = x;
             bottomLabel.style.left = `${x * 32 + 35}px`;
             bottomLabel.style.top = `${height * 32 + 35}px`; // Position below the grid
             boardElement.appendChild(bottomLabel);
+          }
         }
-    }
-    
-    if (wrapY) {
-        // Create Y-axis labels (left)
-        for (let y = 0; y < height; y++) {
-            const label = document.createElement('div');
-            label.className = 'axis-label y-label';
+
+        if (wrapY) {
+          // Create Y-axis labels (left)
+          for (let y = 0; y < height; y++) {
+            const label = document.createElement("div");
+            label.className = "axis-label y-label";
             label.textContent = y;
             label.style.top = `${y * 32 + 35}px`; // Account for padding and gap
             boardElement.appendChild(label);
-            
+
             // Create Y-axis labels (right)
-            const rightLabel = document.createElement('div');
-            rightLabel.className = 'axis-label y-label';
+            const rightLabel = document.createElement("div");
+            rightLabel.className = "axis-label y-label";
             rightLabel.textContent = y;
             rightLabel.style.top = `${y * 32 + 35}px`;
             rightLabel.style.left = `${width * 32 + 35}px`; // Position to the right of the grid
             boardElement.appendChild(rightLabel);
+          }
         }
-    }
-}
+      }
 
-function updateTimeRemaining() {
-    if (!window.timeLimit) return;
-    
-    const timeElapsed = Math.floor((Date.now() - window.startTime) / 1000);
-    const remaining = Math.max(0, window.timeLimit - timeElapsed);
-    document.getElementById('remainingTime').textContent = remaining;
-    
-    if (remaining <= 10) {
-        document.getElementById('remainingTime').classList.add('time-warning');
-    }
-    
-    if (remaining === 0 && !window.gameOver) {
-        window.gameOver = true;
-        clearInterval(window.timerInterval);
+      function updateTimeRemaining() {
+        if (!window.timeLimit) return;
+
+        const timeElapsed = Math.floor((Date.now() - window.startTime) / 1000);
+        const remaining = Math.max(0, window.timeLimit - timeElapsed);
+        document.getElementById("remainingTime").textContent = remaining;
+
+        if (remaining <= 10) {
+          document
+            .getElementById("remainingTime")
+            .classList.add("time-warning");
+        }
+
+        if (remaining === 0 && !window.gameOver) {
+          window.gameOver = true;
+          clearInterval(window.timerInterval);
+          clearInterval(window.remainingTimeInterval);
+          revealAllMines();
+          alert("Time's up! Game Over!");
+        }
+      }
+
+      window.startGame = function () {
+        const width = parseInt(document.getElementById("width").value);
+        const height = parseInt(document.getElementById("height").value);
+        let mineCount = parseInt(document.getElementById("mines").value);
+
+        // Reset time limit related elements
         clearInterval(window.remainingTimeInterval);
-        revealAllMines();
-        alert('Time\'s up! Game Over!');
-    }
-}
+        document
+          .getElementById("remainingTime")
+          .classList.remove("time-warning");
+        window.timeLimit = document.getElementById("enableTimeLimit").checked
+          ? parseInt(document.getElementById("timeLimit").value)
+          : null;
 
-window.startGame = function() {
-    const width = parseInt(document.getElementById('width').value);
-    const height = parseInt(document.getElementById('height').value);
-    let mineCount = parseInt(document.getElementById('mines').value);
-    
-    // Reset time limit related elements
-    clearInterval(window.remainingTimeInterval);
-    document.getElementById('remainingTime').classList.remove('time-warning');
-    window.timeLimit = document.getElementById('enableTimeLimit').checked ? 
-        parseInt(document.getElementById('timeLimit').value) : null;
-    
-    // Validate inputs
-    if (mineCount >= width * height) {
-        mineCount = Math.floor(width * height * 0.8);
-        document.getElementById('mines').value = mineCount;
-    }
-    
-    // Reset game state
-    window.board = [];
-    window.revealed = [];
-    window.gameOver = false;
-    window.flagsPlaced = 0;
-    window.firstClick = true;
-    document.getElementById('flagCount').textContent = flagsPlaced;
-    clearInterval(window.timerInterval);
-    document.getElementById('timer').textContent = '0';
-    document.getElementById('remainingTime').textContent = window.timeLimit || '0';
-    
-    // Set initial visibility
-    const timeLimitEnabled = document.getElementById('enableTimeLimit').checked;
-    document.getElementById('regularTimer').style.display = timeLimitEnabled ? 'none' : 'inline';
-    document.getElementById('timeRemaining').style.display = timeLimitEnabled ? 'inline' : 'none';
+        // Validate inputs
+        if (mineCount >= width * height) {
+          mineCount = Math.floor(width * height * 0.8);
+          document.getElementById("mines").value = mineCount;
+        }
 
-    // Initialize boards
-    for (let i = 0; i < height; i++) {
-        window.board[i] = Array(width).fill(0);
-        window.revealed[i] = Array(width).fill(false);
-    }
-    
-    // Create board UI
-    const boardElement = document.getElementById('board');
-    boardElement.style.gridTemplateColumns = `repeat(${width}, 30px)`;
-    boardElement.innerHTML = '';
-    
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            const cell = document.createElement('div');
-            cell.className = 'cell';
+        // Reset game state
+        window.board = [];
+        window.revealed = [];
+        window.gameOver = false;
+        window.flagsPlaced = 0;
+        window.firstClick = true;
+        document.getElementById("flagCount").textContent = flagsPlaced;
+        clearInterval(window.timerInterval);
+        document.getElementById("timer").textContent = "0";
+        document.getElementById("remainingTime").textContent =
+          window.timeLimit || "0";
+
+        // Set initial visibility
+        const timeLimitEnabled =
+          document.getElementById("enableTimeLimit").checked;
+        document.getElementById("regularTimer").style.display = timeLimitEnabled
+          ? "none"
+          : "inline";
+        document.getElementById("timeRemaining").style.display =
+          timeLimitEnabled ? "inline" : "none";
+
+        // Initialize boards
+        for (let i = 0; i < height; i++) {
+          window.board[i] = Array(width).fill(0);
+          window.revealed[i] = Array(width).fill(false);
+        }
+
+        // Create board UI
+        const boardElement = document.getElementById("board");
+        boardElement.style.gridTemplateColumns = `repeat(${width}, 30px)`;
+        boardElement.innerHTML = "";
+
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            const cell = document.createElement("div");
+            cell.className = "cell";
             cell.dataset.x = x;
             cell.dataset.y = y;
-            cell.addEventListener('click', () => handleClick(x, y));
-            cell.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                toggleFlag(x, y);
+            cell.addEventListener("click", () => handleClick(x, y));
+            cell.addEventListener("contextmenu", (e) => {
+              e.preventDefault();
+              toggleFlag(x, y);
             });
             boardElement.appendChild(cell);
+          }
         }
-    }
 
-    // Create board labels
-    createBoardLabels(width, height);
-    
-    // Check mine percentage after starting new game
-    checkMinePercentage();
-}
+        // Create board labels
+        createBoardLabels(width, height);
 
-function wrapCoordinate(coord, max) {
-    if (coord < 0) return max - 1;
-    if (coord >= max) return 0;
-    return coord;
-}
+        // Check mine percentage after starting new game
+        checkMinePercentage();
+      };
 
-function getWrappedCoordinates(x, y) {
-    const width = window.board[0].length;
-    const height = window.board.length;
-    const wrapX = document.getElementById('wrapX').checked;
-    const wrapY = document.getElementById('wrapY').checked;
-    
-    let newX = x;
-    let newY = y;
-    
-    if (wrapX) {
-        newX = wrapCoordinate(x, width);
-    }
-    if (wrapY) {
-        newY = wrapCoordinate(y, height);
-    }
-    
-    return { x: newX, y: newY };
-}
+      function wrapCoordinate(coord, max) {
+        if (coord < 0) return max - 1;
+        if (coord >= max) return 0;
+        return coord;
+      }
 
-function handleClick(x, y) {
-    if (window.firstClick) {
-        window.firstClick = false;
-        placeMinesExcept(x, y);
-        window.startTime = Date.now();
-        window.timerInterval = setInterval(updateTimer, 1000);
-        if (window.timeLimit) {
-            window.remainingTimeInterval = setInterval(updateTimeRemaining, 1000);
+      function getWrappedCoordinates(x, y) {
+        const width = window.board[0].length;
+        const height = window.board.length;
+        const wrapX = document.getElementById("wrapX").checked;
+        const wrapY = document.getElementById("wrapY").checked;
+
+        let newX = x;
+        let newY = y;
+
+        if (wrapX) {
+          newX = wrapCoordinate(x, width);
         }
-    }
-    revealCell(x, y);
-}
+        if (wrapY) {
+          newY = wrapCoordinate(y, height);
+        }
 
-function placeMinesExcept(safeX, safeY) {
-    const width = window.board[0].length;
-    const height = window.board.length;
-    let mineCount = parseInt(document.getElementById('mines').value);
-    const wrapX = document.getElementById('wrapX').checked;
-    const wrapY = document.getElementById('wrapY').checked;
-    
-    let minesPlaced = 0;
-    while (minesPlaced < mineCount) {
-        const x = Math.floor(Math.random() * width);
-        const y = Math.floor(Math.random() * height);
-        
-        // Check if the position is in the safe zone around the first click
-        let isSafe = false;
-        for (let dy = -1; dy <= 1; dy++) {
+        return { x: newX, y: newY };
+      }
+
+      function handleClick(x, y) {
+        if (window.firstClick) {
+          window.firstClick = false;
+          placeMinesExcept(x, y);
+          window.startTime = Date.now();
+          window.timerInterval = setInterval(updateTimer, 1000);
+          if (window.timeLimit) {
+            window.remainingTimeInterval = setInterval(
+              updateTimeRemaining,
+              1000
+            );
+          }
+        }
+        revealCell(x, y);
+      }
+
+      function placeMinesExcept(safeX, safeY) {
+        const width = window.board[0].length;
+        const height = window.board.length;
+        let mineCount = parseInt(document.getElementById("mines").value);
+        const wrapX = document.getElementById("wrapX").checked;
+        const wrapY = document.getElementById("wrapY").checked;
+
+        let minesPlaced = 0;
+        while (minesPlaced < mineCount) {
+          const x = Math.floor(Math.random() * width);
+          const y = Math.floor(Math.random() * height);
+
+          // Check if the position is in the safe zone around the first click
+          let isSafe = false;
+          for (let dy = -1; dy <= 1; dy++) {
             for (let dx = -1; dx <= 1; dx++) {
-                let checkX = safeX + dx;
-                let checkY = safeY + dy;
-                
-                if (wrapX) checkX = wrapCoordinate(checkX, width);
-                if (wrapY) checkY = wrapCoordinate(checkY, height);
-                
-                if (x === checkX && y === checkY) {
-                    isSafe = true;
-                    break;
-                }
+              let checkX = safeX + dx;
+              let checkY = safeY + dy;
+
+              if (wrapX) checkX = wrapCoordinate(checkX, width);
+              if (wrapY) checkY = wrapCoordinate(checkY, height);
+
+              if (x === checkX && y === checkY) {
+                isSafe = true;
+                break;
+              }
             }
             if (isSafe) break;
-        }
-        
-        if (isSafe) continue;
-        
-        if (window.board[y][x] !== -1) {
+          }
+
+          if (isSafe) continue;
+
+          if (window.board[y][x] !== -1) {
             window.board[y][x] = -1;
             minesPlaced++;
+          }
         }
-    }
-    
-    // Calculate numbers
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
+
+        // Calculate numbers
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
             if (window.board[y][x] === -1) continue;
             window.board[y][x] = countAdjacentMines(x, y);
+          }
         }
-    }
-}
+      }
 
-function countAdjacentMines(x, y) {
-    let count = 0;
-    const width = window.board[0].length;
-    const height = window.board.length;
-    const wrapX = document.getElementById('wrapX').checked;
-    const wrapY = document.getElementById('wrapY').checked;
-    const range = parseInt(document.getElementById('detectionRange').value);
-    
-    for (let dy = -range; dy <= range; dy++) {
-        for (let dx = -range; dx <= range; dx++) {
+      function countAdjacentMines(x, y) {
+        let count = 0;
+        const width = window.board[0].length;
+        const height = window.board.length;
+        const wrapX = document.getElementById("wrapX").checked;
+        const wrapY = document.getElementById("wrapY").checked;
+        const range = parseInt(document.getElementById("detectionRange").value);
+
+        for (let dy = -range; dy <= range; dy++) {
+          for (let dx = -range; dx <= range; dx++) {
             // Skip the center cell
             if (dx === 0 && dy === 0) continue;
-            
+
             let newX = x + dx;
             let newY = y + dy;
-            
+
             // Skip if out of bounds and not wrapping
             if (!wrapX && (newX < 0 || newX >= width)) continue;
             if (!wrapY && (newY < 0 || newY >= height)) continue;
-            
+
             // Apply wrapping if enabled
             if (wrapX) newX = wrapCoordinate(newX, width);
             if (wrapY) newY = wrapCoordinate(newY, height);
-            
+
             // Check if it's a mine
             if (window.board[newY][newX] === -1) {
-                count++;
+              count++;
             }
+          }
         }
-    }
-    return count;
-}
+        return count;
+      }
 
-function revealCell(x, y) {
-    const width = window.board[0].length;
-    const height = window.board.length;
-    const wrapX = document.getElementById('wrapX').checked;
-    const wrapY = document.getElementById('wrapY').checked;
-    
-    // Wrap coordinates if needed
-    const coords = getWrappedCoordinates(x, y);
-    x = coords.x;
-    y = coords.y;
-    
-    // Prevent revealing cells that are already revealed or flagged
-    if (window.gameOver || window.revealed[y][x] || 
-        document.querySelector(`[data-x="${x}"][data-y="${y}"]`).classList.contains('flagged')) return;
-    
-    window.revealed[y][x] = true;
-    const cell = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
-    cell.classList.add('revealed');
-    
-    if (window.board[y][x] === -1) {
-        window.gameOver = true;
-        cell.classList.add('mine');
-        revealAllMines();
-        clearInterval(window.timerInterval);
-        clearInterval(window.remainingTimeInterval);
-        alert('Game Over!');
-        return;
-    }
-    
-    if (window.board[y][x] === 0) {
-        // Keep track of cells we've already checked to prevent infinite loops
-        const checkedCells = new Set();
-        const key = `${x},${y}`;
-        checkedCells.add(key);
-        
-        for (let dy = -1; dy <= 1; dy++) {
-            for (let dx = -1; dx <= 1; dx++) {
-                if (dx === 0 && dy === 0) continue;
-                
-                let newX = x + dx;
-                let newY = y + dy;
-                
-                // Skip if out of bounds and not wrapping
-                if (!wrapX && (newX < 0 || newX >= width)) continue;
-                if (!wrapY && (newY < 0 || newY >= height)) continue;
-                
-                // Apply wrapping if enabled
-                if (wrapX) newX = wrapCoordinate(newX, width);
-                if (wrapY) newY = wrapCoordinate(newY, height);
-                
-                const newKey = `${newX},${newY}`;
-                if (!checkedCells.has(newKey) && !window.revealed[newY][newX]) {
-                    checkedCells.add(newKey);
-                    revealCell(newX, newY);
-                }
-            }
-        }
-    } else {
-        cell.textContent = window.board[y][x];
-        cell.style.color = getNumberColor(window.board[y][x]);
-    }
-    
-    checkWin();
-}
-
-function toggleFlag(x, y) {
-    if (window.gameOver || window.revealed[y][x]) return;
-    
-    const cell = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
-    if (cell.classList.contains('flagged')) {
-        cell.classList.remove('flagged');
-        window.flagsPlaced--;
-    } else {
-        cell.classList.add('flagged');
-        window.flagsPlaced++;
-    }
-    document.getElementById('flagCount').textContent = window.flagsPlaced;
-}
-
-function revealAllMines() {
-    for (let y = 0; y < window.board.length; y++) {
-        for (let x = 0; x < window.board[0].length; x++) {
-            if (window.board[y][x] === -1) {
-                const cell = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
-                cell.classList.add('revealed', 'mine');
-            }
-        }
-    }
-}
-
-function getNumberColor(number) {
-    const colors = ['', '#0000FF', '#008000', '#FF0000', '#000080', 
-                   '#800000', '#008080', '#000000', '#808080'];
-    return colors[number % colors.length] || '#505050';
-}
-
-function checkWin() {
-    let unrevealedSafeCells = false;
-    for (let y = 0; y < window.board.length; y++) {
-        for (let x = 0; x < window.board[0].length; x++) {
-            if (window.board[y][x] !== -1 && !window.revealed[y][x]) {
-                unrevealedSafeCells = true;
-                break;
-            }
-        }
-    }
-    
-    if (!unrevealedSafeCells) {
-        window.gameOver = true;
-        clearInterval(window.timerInterval);
-        clearInterval(window.remainingTimeInterval);
-        alert('Congratulations! You won!');
-    }
-}
-
-function updateTimer() {
-    const seconds = Math.floor((Date.now() - window.startTime) / 1000);
-    document.getElementById('timer').textContent = seconds;
-}
-
-// Start first game on load
-window.startGame();
-
-// Add event listeners to update labels when wrap options change
-document.getElementById('wrapX').addEventListener('change', () => {
-    if (!window.gameOver) {
-        createBoardLabels(window.board[0].length, window.board.length);
-    }
-});
-
-document.getElementById('wrapY').addEventListener('change', () => {
-    if (!window.gameOver) {
-        createBoardLabels(window.board[0].length, window.board.length);
-    }
-});
-
-// Add event listener to update the board when detection range changes
-document.getElementById('detectionRange').addEventListener('change', function() {
-    if (!window.gameOver && !window.firstClick) {
-        // Recalculate all numbers on the board
+      function revealCell(x, y) {
         const width = window.board[0].length;
         const height = window.board.length;
-        
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                if (window.board[y][x] !== -1) {
-                    window.board[y][x] = countAdjacentMines(x, y);
-                    // Update visible numbers
-                    if (window.revealed[y][x]) {
-                        const cell = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
-                        cell.textContent = window.board[y][x];
-                        cell.style.color = getNumberColor(window.board[y][x]);
-                    }
-                }
-            }
+        const wrapX = document.getElementById("wrapX").checked;
+        const wrapY = document.getElementById("wrapY").checked;
+
+        // Wrap coordinates if needed
+        const coords = getWrappedCoordinates(x, y);
+        x = coords.x;
+        y = coords.y;
+
+        // Prevent revealing cells that are already revealed or flagged
+        if (
+          window.gameOver ||
+          window.revealed[y][x] ||
+          document
+            .querySelector(`[data-x="${x}"][data-y="${y}"]`)
+            .classList.contains("flagged")
+        )
+          return;
+
+        window.revealed[y][x] = true;
+        const cell = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+        cell.classList.add("revealed");
+
+        if (window.board[y][x] === -1) {
+          window.gameOver = true;
+          cell.classList.add("mine");
+          revealAllMines();
+          clearInterval(window.timerInterval);
+          clearInterval(window.remainingTimeInterval);
+          alert("Game Over!");
+          return;
         }
-    }
-});
-</script>
-<div class="footer-text">Created by Mixel346 with Websim.ai</div>
-</body></html>
+
+        if (window.board[y][x] === 0) {
+          // Keep track of cells we've already checked to prevent infinite loops
+          const checkedCells = new Set();
+          const key = `${x},${y}`;
+          checkedCells.add(key);
+
+          for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+              if (dx === 0 && dy === 0) continue;
+
+              let newX = x + dx;
+              let newY = y + dy;
+
+              // Skip if out of bounds and not wrapping
+              if (!wrapX && (newX < 0 || newX >= width)) continue;
+              if (!wrapY && (newY < 0 || newY >= height)) continue;
+
+              // Apply wrapping if enabled
+              if (wrapX) newX = wrapCoordinate(newX, width);
+              if (wrapY) newY = wrapCoordinate(newY, height);
+
+              const newKey = `${newX},${newY}`;
+              if (!checkedCells.has(newKey) && !window.revealed[newY][newX]) {
+                checkedCells.add(newKey);
+                revealCell(newX, newY);
+              }
+            }
+          }
+        } else {
+          cell.textContent = window.board[y][x];
+          cell.style.color = getNumberColor(window.board[y][x]);
+        }
+
+        checkWin();
+      }
+
+      function toggleFlag(x, y) {
+        if (window.gameOver || window.revealed[y][x]) return;
+
+        const cell = document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+        if (cell.classList.contains("flagged")) {
+          cell.classList.remove("flagged");
+          window.flagsPlaced--;
+        } else {
+          cell.classList.add("flagged");
+          window.flagsPlaced++;
+        }
+        document.getElementById("flagCount").textContent = window.flagsPlaced;
+      }
+
+      function revealAllMines() {
+        for (let y = 0; y < window.board.length; y++) {
+          for (let x = 0; x < window.board[0].length; x++) {
+            if (window.board[y][x] === -1) {
+              const cell = document.querySelector(
+                `[data-x="${x}"][data-y="${y}"]`
+              );
+              cell.classList.add("revealed", "mine");
+            }
+          }
+        }
+      }
+
+      function getNumberColor(number) {
+        const colors = [
+          "",
+          "#0000FF",
+          "#008000",
+          "#FF0000",
+          "#000080",
+          "#800000",
+          "#008080",
+          "#000000",
+          "#808080",
+        ];
+        return colors[number % colors.length] || "#505050";
+      }
+
+      function checkWin() {
+        let unrevealedSafeCells = false;
+        for (let y = 0; y < window.board.length; y++) {
+          for (let x = 0; x < window.board[0].length; x++) {
+            if (window.board[y][x] !== -1 && !window.revealed[y][x]) {
+              unrevealedSafeCells = true;
+              break;
+            }
+          }
+        }
+
+        if (!unrevealedSafeCells) {
+          window.gameOver = true;
+          clearInterval(window.timerInterval);
+          clearInterval(window.remainingTimeInterval);
+          alert("Congratulations! You won!");
+        }
+      }
+
+      function updateTimer() {
+        const seconds = Math.floor((Date.now() - window.startTime) / 1000);
+        document.getElementById("timer").textContent = seconds;
+      }
+
+      // Start first game on load
+      window.startGame();
+
+      // Add event listeners to update labels when wrap options change
+      document.getElementById("wrapX").addEventListener("change", () => {
+        if (!window.gameOver) {
+          createBoardLabels(window.board[0].length, window.board.length);
+        }
+      });
+
+      document.getElementById("wrapY").addEventListener("change", () => {
+        if (!window.gameOver) {
+          createBoardLabels(window.board[0].length, window.board.length);
+        }
+      });
+
+      // Add event listener to update the board when detection range changes
+      document
+        .getElementById("detectionRange")
+        .addEventListener("change", function () {
+          if (!window.gameOver && !window.firstClick) {
+            // Recalculate all numbers on the board
+            const width = window.board[0].length;
+            const height = window.board.length;
+
+            for (let y = 0; y < height; y++) {
+              for (let x = 0; x < width; x++) {
+                if (window.board[y][x] !== -1) {
+                  window.board[y][x] = countAdjacentMines(x, y);
+                  // Update visible numbers
+                  if (window.revealed[y][x]) {
+                    const cell = document.querySelector(
+                      `[data-x="${x}"][data-y="${y}"]`
+                    );
+                    cell.textContent = window.board[y][x];
+                    cell.style.color = getNumberColor(window.board[y][x]);
+                  }
+                }
+              }
+            }
+          }
+        });
+    </script>
+    <div class="footer-text">Created by Mixel346 with Websim.ai</div>
+  </body>
+</html>
