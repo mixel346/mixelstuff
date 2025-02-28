@@ -2,7 +2,6 @@
   --primary-gradient: linear-gradient(135deg, #ffd700, #ff4500);
   --secondary-gradient: linear-gradient(45deg, #ff8c00, #ff0000);
 }
-
 * {
   margin: 0;
   padding: 0;
@@ -10,7 +9,7 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: #111;
   color: white;
   line-height: 1.6;
@@ -65,7 +64,7 @@ main {
   align-items: center;
   text-align: center;
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
-              url('CS_simplemeadow.png');
+    url("CS_Art6.png");
   background-size: cover;
   background-position: center;
   position: relative;
@@ -190,7 +189,8 @@ h3 {
 }
 
 @keyframes titleFloat {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -217,7 +217,7 @@ footer {
   .nav-links {
     display: none;
   }
-  
+
   .tagline {
     font-size: 1.2rem;
   }
