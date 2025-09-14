@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Video-Game Challenge Bingo</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 2rem;
+        background: #adadad;
+      }
+      table {
+        margin: 1rem auto;
+        border-collapse: collapse;
+        user-select: none;
+      }
+      td {
+        width: 80px;
+        height: 80px;
+        border: 2px solid #333;
+        vertical-align: middle;
+        text-align: center;
+        font-size: 0.85rem;
+        padding: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      td.free {
+        background: #797474;
+        font-weight: bold;
+        cursor: default;
+      }
+      td.completed {
+        background-color: #7ce47c; /* light green */
+      }
+      button {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Video-Game Challenge Bingo</h1>
+    <button onclick="generateCard()">Generate New Card</button>
+    <table id="bingoCard"></table>
+
+    <script>
+      const entries = [
+        "Defeat a boss without taking damage",
+        "lose within 60 seconds of starting a game",
+        "download and play a new game for 1 min",
+        "delete a save file for a game",
+        "win any game",
+        "complete a roguelike",
+        "listen to the entire menu loop music of a game",
+        "play a game for 1 minute that has a movie/show adaptation of it",
+        "play any game for 10 minutes",
+        "catch 5 fish",
+        "cut down 10 trees",
+        "drown",
+        "die by burning",
+        "complete a level in a game",
+        "die of fall damage",
+        "get an achievement",
+        "listen to a voice line",
+        "watch a full cutscene",
+        "watch the full credits",
+        "open a chest",
+        "wear a full armor set",
+        "die in permadeath",
+        "complete the tutorial",
+        "use a bomb",
+        "play a horror game for 2 minutes",
+        "play a rhythm game for 2 minutes",
+        "play a game you dont like",
+        "go into a cave",
+        "obtain a mineral",
+        "complete a side quest",
+        "talk in a game chat",
+        "play a sequel to a game",
+        "sit by a campfire for 5 minutes",
+        "ride a mount",
+        "drive a vehicle",
+        "drink something",
+        "walk straight for 1 minute",
+        "afk for 3 mins without dying",
+        "get jumpscared",
+        "kill an enemy with a bow",
+        "play a puzzle game",
+        "spend 100 in game currency",
+        "complete a puzzle",
+        "fill your entire inventory",
+        "crash a game",
+        "build a fully furnished house",
+        "commit arson",
+        "commit theft",
+        "commit murder (not on enemies)",
+        "scream in a voice chat game",
+        "create a new avatar",
+        "change all of your settings",
+        "play a game that supports officially vr",
+        "encounter a glitch",
+        "use fast travel",
+        "emote for 3 minutes straight",
+        "cook food and eat it",
+        "give another player an item in a multiplayer game",
+        "pick a flower",
+        "sleep in a bed",
+        "play your least played game until it isn't",
+        "have a full stack of an item in your inventory",
+        "perfect a rhythm game level",
+        "win a 1v1",
+        "win a race in a racing game",
+        "spend 5 minutes in a simulation game",
+        "land a critical hit",
+        "use up / break an item",
+        "get an assist in a multiplayer game",
+        "find a highest rarity item",
+        "double your in game currency in one in game day",
+        "play for 6 minutes, then leave without saving",
+        "get last place in a multiplayer game",
+        "destroy 10 items",
+        "violate the geneva convention",
+        "reach the bottom of the world",
+        "level up 5 times",
+        "uninstall a game (has to be already installed)",
+      ];
+
+      function shuffle(array) {
+        const a = array.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      function generateCard() {
+        if (entries.length < 24) {
+          alert("Please enter at least 24 unique entries.");
+          return;
+        }
+        const shuffled = shuffle(entries);
+        const pick = shuffled.slice(0, 25);
+        const table = document.getElementById("bingoCard");
+        table.innerHTML = "";
+
+        for (let row = 0; row < 5; row++) {
+          const tr = document.createElement("tr");
+          for (let col = 0; col < 5; col++) {
+            const td = document.createElement("td");
+            const idx = row * 5 + col;
+
+            if (row === 2 && col === 2) {
+              td.textContent = "Free Space";
+              td.classList.add("free");
+            } else {
+              td.textContent = pick[idx];
+              td.addEventListener("click", () => {
+                td.classList.toggle("completed");
+              });
+            }
+
+            tr.appendChild(td);
+          }
+          table.appendChild(tr);
+        }
+      }
+
+      window.onload = generateCard;
+    </script>
+  </body>
+</html>
