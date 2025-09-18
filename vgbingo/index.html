@@ -2,13 +2,25 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Video Game Challenge Bingo</title>
+    <title>Custom Video Game Bingo</title>
     <style>
       body {
         font-family: Arial, sans-serif;
         text-align: center;
         margin: 2rem;
-        background: #adadad;
+      }
+      .controls {
+        margin-bottom: 1rem;
+      }
+      input[type="number"] {
+        width: 4rem;
+        padding: 0.2rem;
+        font-size: 1rem;
+        text-align: center;
+      }
+      label {
+        margin: 0 1rem;
+        font-size: 0.95rem;
       }
       table {
         margin: 1rem auto;
@@ -16,23 +28,23 @@
         user-select: none;
       }
       td {
+        border: 2px solid #333;
         width: 80px;
         height: 80px;
-        border: 2px solid #333;
         vertical-align: middle;
         text-align: center;
         font-size: 0.85rem;
         padding: 5px;
         cursor: pointer;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.2s ease;
       }
       td.free {
-        background: #797474;
+        background: #f0f0f0;
         font-weight: bold;
         cursor: default;
       }
       td.completed {
-        background-color: #7ce47c; /* light green */
+        background-color: #90ee90;
       }
       button {
         padding: 0.5rem 1rem;
@@ -43,10 +55,30 @@
   </head>
   <body>
     <h1>Video Game Challenge Bingo</h1>
-    <button onclick="generateCard()">Generate New Card</button>
+
+    <div class="controls">
+      <label>
+        Grid size:
+        <input
+          id="sizeInput"
+          type="number"
+          min="3"
+          max="15"
+          step="2"
+          value="5"
+        />
+      </label>
+      <label>
+        <input id="freeToggle" type="checkbox" checked />
+        Enable Free space
+      </label>
+      <button onclick="generateCard()">Generate Card</button>
+    </div>
+
     <table id="bingoCard"></table>
 
     <script>
+      // your full list of 200+ entries
       const entries = [
         "Defeat a boss without taking damage",
         "lose within 60 seconds of starting a game",
@@ -143,8 +175,8 @@
         "play a mobile game for 3 minutes",
       ];
 
-      function shuffle(array) {
-        const a = array.slice();
+      function shuffle(arr) {
+        const a = arr.slice();
         for (let i = a.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [a[i], a[j]] = [a[j], a[i]];
@@ -153,26 +185,40 @@
       }
 
       function generateCard() {
-        if (entries.length < 24) {
-          alert("Please enter at least 24 unique entries.");
+        const size = parseInt(document.getElementById("sizeInput").value, 10);
+        const freeEnabled = document.getElementById("freeToggle").checked;
+        const totalCells = size * size;
+        const needFree = freeEnabled && size % 2 === 1 ? 1 : 0;
+        const neededEntries = totalCells - needFree;
+
+        if (entries.length < neededEntries) {
+          alert(
+            `Not enough entries! We need ${neededEntries}, but only have ${entries.length}.`
+          );
           return;
         }
-        const shuffled = shuffle(entries);
-        const pick = shuffled.slice(0, 25);
+
+        const pool = shuffle(entries).slice(0, neededEntries);
         const table = document.getElementById("bingoCard");
         table.innerHTML = "";
 
-        for (let row = 0; row < 5; row++) {
-          const tr = document.createElement("tr");
-          for (let col = 0; col < 5; col++) {
-            const td = document.createElement("td");
-            const idx = row * 5 + col;
+        // Compute center index if free is used
+        const center =
+          freeEnabled && size % 2 === 1
+            ? { row: Math.floor(size / 2), col: Math.floor(size / 2) }
+            : null;
 
-            if (row === 2 && col === 2) {
-              td.textContent = "Free Space";
+        let idx = 0;
+        for (let r = 0; r < size; r++) {
+          const tr = document.createElement("tr");
+          for (let c = 0; c < size; c++) {
+            const td = document.createElement("td");
+
+            if (center && r === center.row && c === center.col) {
+              td.textContent = "FREE";
               td.classList.add("free");
             } else {
-              td.textContent = pick[idx];
+              td.textContent = pool[idx++];
               td.addEventListener("click", () => {
                 td.classList.toggle("completed");
               });
@@ -184,6 +230,7 @@
         }
       }
 
+      // auto-generate on load
       window.onload = generateCard;
     </script>
   </body>
