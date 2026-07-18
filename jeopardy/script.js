@@ -1,5 +1,5 @@
 let rows = 5;
-let cols = 6;
+let cols = 5;
 
 let editMode = false;
 
@@ -33,7 +33,7 @@ function createBoard(r, c) {
 
     for (let y = 0; y < r; y++) {
       category.questions.push({
-        value: (y + 1) * 200,
+        value: (y + 1) * 100,
 
         question: "",
         answer: "",
