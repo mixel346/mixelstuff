@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Jeopardy Board</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>Jeopardy Board</h1>
+
+    <div class="toolbar">
+      Rows:
+      <input id="rowsInput" type="number" value="5" min="1" />
+
+      Columns:
+      <input id="colsInput" type="number" value="6" min="1" />
+
+      <button onclick="resizeBoard()">Create Board</button>
+
+      <button onclick="toggleEdit()">Edit Mode</button>
+
+      <button onclick="openFinalJeopardy()">Final Jeopardy</button>
+
+      <button onclick="exportBoard()">Export TXT</button>
+
+      <button onclick="importFile.click()">Import TXT</button>
+
+      <input id="importFile" type="file" hidden />
+    </div>
+
+    <h2>Teams</h2>
+
+    <input id="teamInput" placeholder="Team Name" />
+    <button onclick="addTeam()">Add Team</button>
+
+    <div id="teams"></div>
+
+    <div id="board"></div>
+
+    <!-- Final Jeopardy Editor -->
+    <div id="finalEditor">
+      <h2>Final Jeopardy Setup</h2>
+
+      Category:
+
+      <input id="finalCategoryInput" />
+
+      <br /><br />
+
+      Question:
+
+      <textarea id="finalQuestionInput"></textarea>
+    </div>
+
+    <!-- Question Popup -->
+    <div id="popup" class="popup">
+      <div class="popupContent">
+        <h1 id="popupValue"></h1>
+
+        <h2 id="dailyDoubleText"></h2>
+
+        <h2>Question</h2>
+
+        <p id="popupQuestion"></p>
+
+        <button onclick="showAnswer()">Show Answer</button>
+
+        <div id="answerArea">
+          <h2>Answer</h2>
+
+          <p id="popupAnswer"></p>
+        </div>
+
+        <br />
+
+        <button onclick="closePopup()">Close</button>
+      </div>
+    </div>
+
+    <!-- Final Jeopardy Gameplay -->
+    <div id="finalPopup" class="popup">
+      <div class="popupContent">
+        <h1>Final Jeopardy</h1>
+
+        <h2 id="finalCategoryDisplay"></h2>
+
+        <button onclick="revealFinalQuestion()">Reveal Question</button>
+
+        <div id="finalQuestionArea">
+          <h3 id="finalQuestionDisplay"></h3>
+
+          <button onclick="showWagers()">Enter Wagers</button>
+        </div>
+
+        <div id="wagerArea"></div>
+
+        <button onclick="closeFinal()">Close</button>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
