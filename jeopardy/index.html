@@ -99,5 +99,11 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+window.addEventListener("beforeunload", function (event) {
+    event.preventDefault();
+    event.returnValue = "";
+});
+</script>
   </body>
 </html>
