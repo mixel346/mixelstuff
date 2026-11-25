@@ -249,6 +249,7 @@ const ITEMS = {
   gamble:{name:'Gamble',icon:'🎰',rarity:'Uncommon',cost:10,type:'Active',desc:'50% chance to double your credits; 50% chance to lose them all.',target:false},
   piracy:{name:'Piracy',icon:'🏴‍☠️',rarity:'Uncommon',cost:90,type:'Active',desc:'Steal a random non-legendary item from your opponent.',target:false},
   cursed_artifact:{name:'Cursed Artifact',icon:'💠',rarity:'Uncommon',cost:60,type:'Passive',desc:'Lose 30 Credits if you miss a shot. This item has priority when stealing, and will become unsellable for 5 turns if it.'},
+  mystery_box:{name:'Mystery Box',icon:'🎁',rarity:'Uncommon',cost:100,type:'Passive',desc:'After 3 rounds, transforms into a random item. The item you receive cannot be sold.',timer:3},
   stall:{name:'Stall',icon:'🫸',rarity:'Uncommon',cost:70,type:'Active',desc:'Skip your opponent’s next turn. Can stack.',target:false},
   follow_up:{name:'Follow Up',icon:'❤️‍🔥',rarity:'Rare',cost:110,type:'Passive',desc:'Sinking a ship grants one extra attack that turn. Triggers once per turn.'},
   retreat:{name:'Retreat',icon:'🏃',rarity:'Rare',cost:120,type:'Active',desc:'Move one ship up to one square in any direction.',target:'move'},
@@ -258,6 +259,7 @@ const ITEMS = {
   tariff:{name:'Tariff',icon:'🚫',rarity:'Rare',cost:130,type:'Active',desc:'Your opponent cannot use their shop for 3 of their turns.',target:false},
   deadeye:{name:'Deadeye',icon:'🔫',rarity:'Rare',cost:150,type:'Active',desc:'If your next shot hits, one random adjacent tile is hit too.',target:false},
   retaliator:{name:'Retaliator',icon:'💢',rarity:'Rare',cost:140,type:'Passive',desc:'When hit, 40% chance to retaliate against the same coordinates on the attacker’s board.'},
+  vampirism:{name:'Vampirism',icon:'🧛',rarity:'Rare',cost:150,type:'Passive',desc:'Hitting an enemy’s ship will repair a random tile on one of your unsunken ships.'},
   new_money:{name:'New Money',icon:'💰',rarity:'Rare',cost:110,type:'Passive',desc:'A missed shot grants 30 credits.'},
   refresh:{name:'Refresh',icon:'👁️‍🗨️',rarity:'Rare',cost:150,type:'Active',desc:'Reloads your playing field, removing any hits that were fake or have since moved.',target:false},
   pirate_token:{name:'Pirate Token',icon:'🪙',rarity:'Rare',cost:150,type:'Active',desc:'Your next shop purchase is free.',target:false},
@@ -358,6 +360,33 @@ function applyCursedArtifactMiss(g,attackerId){
  if(!count)return;
  const penalty=30*count;attacker.credits-=penalty;
  privateEvent(g,attackerId,`💠 Cursed Artifact: −${penalty} CR for missing your shot.`,'bad');
+}
+function applyVampirismOnHit(g,attackerId){
+ const owner=g.players[attackerId],stacks=countItem(owner,'vampirism');
+ if(!stacks)return 0;
+ let repaired=0;
+ for(let n=0;n<stacks;n++){
+  const candidates=[];
+  for(const ship of owner.ships){
+   if(shipSunk(ship))continue;
+   const hp=ship.hp||SHIPS[ship.type]?.hp||1;
+   // Match Repair's rules: the ship must retain an untouched tile, and this
+   // particular tile must be destroyed, unrepaired, and not Crackshot-marked.
+   if(!ship.cells.some(cell=>cell.damage===0))continue;
+   for(const cell of ship.cells){
+    if(cell.damage>=hp&&!cell.repaired&&!cell.crackshot)candidates.push({ship,cell,hp});
+   }
+  }
+  if(!candidates.length)break;
+  const chosen=candidates[rand(candidates.length)];
+  chosen.cell.damage=Math.max(0,chosen.hp-1);
+  chosen.cell.repaired=true;
+  chosen.ship.sunk=false;
+  markIncomingTileRestored(owner,chosen.cell.x,chosen.cell.y);
+  repaired++;
+  privateEvent(g,attackerId,`🧛 Vampirism repaired ${coord(chosen.cell.x,chosen.cell.y)} on your ${shipName(chosen.ship)}.`,'good');
+ }
+ return repaired;
 }
 function notifyOpponent(g,ownerId,text){privateEvent(g,other(ownerId),text,'private');}
 function other(pid){return pid==='host'?'guest':'host';}
@@ -575,6 +604,47 @@ function itemShopEligible(g,pid,type){
 function pruneUnavailableShopItems(g){
  for(const pid of ['host','guest']){const p=g.players[pid];p.shop=p.shop.filter(stock=>itemShopEligible(g,pid,stock.type));}
 }
+// Mystery Box rarity weights total 100%, so these are the exact outcome chances.
+const MYSTERY_BOX_RARITY_WEIGHTS=[['Common',40],['Uncommon',40],['Rare',12],['Legendary',7],['Mythical',1]];
+function mysteryOutcomeEligible(g,pid,type){
+ const p=g.players[pid],item=ITEMS[type];
+ if(!p||!item||type==='mystery_box')return false;
+ if(item.oncePerMatch&&g.matchUniqueClaims?.[type])return false;
+ if(type==='gerald'&&g.geraldClaimed)return false;
+ if(item.oncePerPlayer&&p.acquiredUnique?.includes(type))return false;
+ if(item.max){const acquired=type==='peek'?p.peekBought:countItem(p,type);if(acquired>=item.max)return false;}
+ if(type==='loan'&&ownsItem(p,'loan'))return false;
+ return true;
+}
+function chooseMysteryBoxOutcome(g,pid){
+ const pools={};
+ for(const [type,item] of Object.entries(ITEMS)){
+  if(!mysteryOutcomeEligible(g,pid,type))continue;
+  (pools[item.rarity]??=[]).push(type);
+ }
+ const available=MYSTERY_BOX_RARITY_WEIGHTS.filter(([rarity])=>(pools[rarity]||[]).length);
+ if(!available.length)return 'cash_boost';
+ const total=available.reduce((sum,[,weight])=>sum+weight,0);
+ let roll=Math.random()*total,rarity=available[available.length-1][0];
+ for(const [candidate,weight] of available){roll-=weight;if(roll<0){rarity=candidate;break;}}
+ const pool=pools[rarity];return pool[rand(pool.length)];
+}
+function transformMysteryBox(g,pid,instance){
+ const p=g.players[pid],type=chooseMysteryBoxOutcome(g,pid),item=ITEMS[type];
+ instance.type=type;instance.unsellable=true;
+ delete instance.turnsLeft;delete instance.geraldTimer;
+ if(item.timer)instance.turnsLeft=item.timer;
+ if(type==='gerald')instance.geraldTimer=12+rand(7);
+ if(item.oncePerMatch){g.matchUniqueClaims[type]=true;if(type==='gerald')g.geraldClaimed=true;}
+ if(item.oncePerPlayer){if(!p.acquiredUnique.includes(type))p.acquiredUnique.push(type);if(type==='cheat_death')p.cheatDeathUsed=true;}
+ if(type==='peek')p.peekBought++;
+ if(type==='loan'){
+  p.credits+=80;
+  privateEvent(g,pid,'📊 Your Mystery Box revealed a Loan: +80 CR now, with repayment due in 3 turns.','good');
+ }
+ privateEvent(g,pid,`🎁 Your Mystery Box opened into ${item.icon} ${item.name}! The item cannot be sold.`,'good');
+ if(type==='poseidons_curse')privateEvent(g,other(pid),'Cursed! 1.5X Shop Prices!','bad');
+}
 function randomShop(g,pid){if(g.armageddon)return [];const shop=[];const pools={};for(const [id,it] of Object.entries(ITEMS)){if(!itemShopEligible(g,pid,id))continue;(pools[it.rarity]??=[]).push(id);}for(let i=0;i<shopLimit(g);i++){const available=RARITY_WEIGHTS.filter(([rarity])=>(pools[rarity]||[]).length);if(!available.length)break;const total=available.reduce((n,[,weight])=>n+weight,0);let roll=Math.random()*total,rarity=available[available.length-1][0];for(const [candidate,weight] of available){roll-=weight;if(roll<0){rarity=candidate;break;}}const pool=pools[rarity],index=rand(pool.length),type=pool.splice(index,1)[0];shop.push({slot:uid(),type});}return shop;}
 function buyItem(g,pid,slot){
  const p=g.players[pid],opp=g.players[other(pid)];
@@ -610,7 +680,7 @@ function rerollShop(g,pid){
  if(!testMode){p.rerollCount++;p.rerollsThisTurn++;}
  p.shop=randomShop(g,p.id);
 }
-function sellItem(g,pid,instanceId){const p=g.players[pid];if(g.active!==pid){privateEvent(g,pid,'You can only sell items during your turn.');return;}const i=p.inventory.findIndex(it=>it.id===instanceId);if(i<0)return;const inst=p.inventory[i];if(itemIsDisabled(inst)){privateEvent(g,pid,`${itemName(inst.type)} is disabled and cannot be sold this turn.`,'bad');return;}if(inst.type==='loan'||inst.type==='invest'){privateEvent(g,pid,`${itemName(inst.type)} cannot be sold.`);return;}if(inst.type==='cursed_artifact'&&inst.stolenLockTurns>0){privateEvent(g,pid,`💠 This stolen Cursed Artifact cannot be sold for ${inst.stolenLockTurns} more turn${inst.stolenLockTurns===1?'':'s'}.`,'bad');return;}const wasCurse=inst.type==='poseidons_curse';const refund=Math.trunc(ITEMS[inst.type].cost/4);p.inventory.splice(i,1);p.credits+=refund;privateEvent(g,pid,`Sold ${itemName(inst.type)} for ${refund} CR.`,'good');if(wasCurse&&!hasItem(p,'poseidons_curse'))privateEvent(g,other(pid),'The Curse has been lifted…','good');}
+function sellItem(g,pid,instanceId){const p=g.players[pid];if(g.active!==pid){privateEvent(g,pid,'You can only sell items during your turn.');return;}const i=p.inventory.findIndex(it=>it.id===instanceId);if(i<0)return;const inst=p.inventory[i];if(itemIsDisabled(inst)){privateEvent(g,pid,`${itemName(inst.type)} is disabled and cannot be sold this turn.`,'bad');return;}if(inst.unsellable){privateEvent(g,pid,`${itemName(inst.type)} was received from a Mystery Box and cannot be sold.`,'bad');return;}if(inst.type==='loan'||inst.type==='invest'){privateEvent(g,pid,`${itemName(inst.type)} cannot be sold.`);return;}if(inst.type==='cursed_artifact'&&inst.stolenLockTurns>0){privateEvent(g,pid,`💠 This stolen Cursed Artifact cannot be sold for ${inst.stolenLockTurns} more turn${inst.stolenLockTurns===1?'':'s'}.`,'bad');return;}const wasCurse=inst.type==='poseidons_curse';const refund=Math.trunc(ITEMS[inst.type].cost/4);p.inventory.splice(i,1);p.credits+=refund;privateEvent(g,pid,`Sold ${itemName(inst.type)} for ${refund} CR.`,'good');if(wasCurse&&!hasItem(p,'poseidons_curse'))privateEvent(g,other(pid),'The Curse has been lifted…','good');}
 
 // ---------------------------------------------------------------------------
 // ITEM USE
@@ -823,6 +893,7 @@ function resolveShot(g,attackerId,targetId,x,y,opts={}){
    privateEvent(g,attackerId,`Spirit Leviathan granted you +${spiritGain} CR.`,'good');
   }
  }
+ if((result==='hit'||result==='shield')&&!g.winner)applyVampirismOnHit(g,attackerId);
  recordShotPair(attacker,target,x,y,{result,...recordExtra},{result,...recordExtra});
  return {hit,sunk,result};
 }
@@ -899,7 +970,10 @@ function finishTurn(g,pid,skipped=false,timedOut=false){
   }
   for(let i=p.inventory.length-1;i>=0;i--){
    const it=p.inventory[i];
-   if(it.type==='invest'||it.type==='loan'){
+   if(it.type==='mystery_box'){
+    it.turnsLeft--;
+    if(it.turnsLeft<=0)transformMysteryBox(g,currentPid,it);
+   }else if(it.type==='invest'||it.type==='loan'){
     it.turnsLeft--;
     if(it.turnsLeft<=0){
      if(it.type==='invest'){p.credits+=100;privateEvent(g,currentPid,'📦 Your investment matured: +100 CR.','good');}
@@ -1060,7 +1134,7 @@ function renderShop(){
  $('rerollHint').textContent=p.pirateTokenArmed?'Pirate Token armed · next purchase is free':unlimited?'Unlimited · Testmode':p.rerollsThisTurn?'Used this turn':'Once per turn';
 }
 function hasItemView(type){return view.you.inventory.some(i=>i.type===type&&!itemIsDisabled(i))}function countItemView(type){return type==='peek'?view.you.peekBought:view.you.inventory.filter(i=>i.type===type&&!itemIsDisabled(i)).length;}
-function renderInventory(){const p=view.you,maxItems=view.settings?.inventorySlots||5;$('inventoryCount').textContent=`${p.inventory.length} / ${maxItems} ITEMS`;$('inventoryList').innerHTML=p.inventory.length?p.inventory.map(inst=>{const it=ITEMS[inst.type],active=it.type==='Active',isPending=pending?.instance===inst.id,disabled=itemIsDisabled(inst);let timer=inst.type==='gerald'?'':inst.turnsLeft?` · ${inst.turnsLeft} turns left`:'';const disabledLabel=disabled?` · DISABLED (${inst.disabledTurns} turn${inst.disabledTurns===1?'':'s'} left)`:'';const stolenLock=inst.type==='cursed_artifact'&&inst.stolenLockTurns>0;const stolenLabel=stolenLock?` · STOLEN · UNSSELLABLE (${inst.stolenLockTurns} turn${inst.stolenLockTurns===1?'':'s'} left)`:'';return `<div class="inv-item ${isPending?'inv-active':''} ${disabled?'inv-disabled':''}"><div class="item-icon">${it.icon}</div><div class="item-info"><strong>${esc(it.name)} <span class="rarity ${it.rarity}">${it.rarity}</span>${disabled?'<span class="rarity" style="color:#ff9ca4">DISABLED</span>':''}${stolenLock?'<span class="rarity" style="color:#e8ba74">STOLEN</span>':''}</strong><small>${it.type}${timer}${disabledLabel}${stolenLabel} · ${esc(it.desc)}</small></div>${active?`<button data-use="${inst.id}" ${view.active!==view.myId||!!pending||p.attackedThisTurn||!!view.winner||disabled?'disabled':''} title="${disabled?'Disabled for this turn':'Use item'}">Use</button>`:''}<button data-sell="${inst.id}" ${view.active!==view.myId||!!view.winner||inst.type==='loan'||inst.type==='invest'||disabled||stolenLock?'disabled':''} title="${disabled?'Disabled items cannot be sold this turn':stolenLock?`Stolen item cannot be sold for ${inst.stolenLockTurns} more turns`:inst.type==='loan'||inst.type==='invest'?'This item cannot be sold':'Sell for one quarter of its original price'}">Sell</button></div>`;}).join(''):'<div class="shop-locked">Your inventory is empty. Visit the black market after turn 3.</div>';
+function renderInventory(){const p=view.you,maxItems=view.settings?.inventorySlots||5;$('inventoryCount').textContent=`${p.inventory.length} / ${maxItems} ITEMS`;$('inventoryList').innerHTML=p.inventory.length?p.inventory.map(inst=>{const it=ITEMS[inst.type],active=it.type==='Active',isPending=pending?.instance===inst.id,disabled=itemIsDisabled(inst);let timer=inst.type==='gerald'?'':inst.turnsLeft?` · ${inst.turnsLeft} ${inst.type==='mystery_box'?'rounds until opening':'turns left'}`:'';const disabledLabel=disabled?` · DISABLED (${inst.disabledTurns} turn${inst.disabledTurns===1?'':'s'} left)`:'';const stolenLock=inst.type==='cursed_artifact'&&inst.stolenLockTurns>0;const stolenLabel=stolenLock?` · STOLEN · UNSSELLABLE (${inst.stolenLockTurns} turn${inst.stolenLockTurns===1?'':'s'} left)`:'';const unsellable=!!inst.unsellable;const unsellableLabel=unsellable?' · CANNOT BE SOLD':'';return `<div class="inv-item ${isPending?'inv-active':''} ${disabled?'inv-disabled':''}"><div class="item-icon">${it.icon}</div><div class="item-info"><strong>${esc(it.name)} <span class="rarity ${it.rarity}">${it.rarity}</span>${disabled?'<span class="rarity" style="color:#ff9ca4">DISABLED</span>':''}${stolenLock?'<span class="rarity" style="color:#e8ba74">STOLEN</span>':''}${unsellable?'<span class="rarity" style="color:#e8ba74">UNSELLABLE</span>':''}</strong><small>${it.type}${timer}${disabledLabel}${stolenLabel}${unsellableLabel} · ${esc(it.desc)}</small></div>${active?`<button data-use="${inst.id}" ${view.active!==view.myId||!!pending||p.attackedThisTurn||!!view.winner||disabled?'disabled':''} title="${disabled?'Disabled for this turn':'Use item'}">Use</button>`:''}<button data-sell="${inst.id}" ${view.active!==view.myId||!!view.winner||inst.type==='loan'||inst.type==='invest'||disabled||stolenLock||unsellable?'disabled':''} title="${disabled?'Disabled items cannot be sold this turn':unsellable?'This item was received from a Mystery Box and cannot be sold':stolenLock?`Stolen item cannot be sold for ${inst.stolenLockTurns} more turns`:inst.type==='loan'||inst.type==='invest'?'This item cannot be sold':'Sell for one quarter of its original price'}">Sell</button></div>`;}).join(''):'<div class="shop-locked">Your inventory is empty. Visit the black market after turn 3.</div>';
  $('pendingAction').classList.toggle('hidden',!pending);$('pendingAction').textContent=pending?pending.label:'';$('cancelPendingBtn').classList.toggle('hidden',!pending);}
 
 // ---------------------------------------------------------------------------
@@ -1242,7 +1316,7 @@ function commanderItemValue(type,bot,opp){
   double_tap:132,follow_up:120,spirit_leviathan:170,crackshot:enemyHasShields?145:78,radar:enemyTypes.has('ghost_vessel')?145:68,
   meteor_shower:112,bounty_hunter:95,trust_fund:activeShips.length>=3?112:80,cheat_death:112,poseidons_curse:84,
   ghost_vessel:enemyTypes.has('radar')?18:112,retaliator:enemyTypes.has('double_tap')||enemyTypes.has('follow_up')?112:88,
-  cash_boost:early?102:late?20:62,gerald:early?100:late?24:65,new_money:54,pity:damaged?66:42,
+  cash_boost:early?102:late?20:62,gerald:early?100:late?24:65,mystery_box:early?116:late?66:90,vampirism:damaged?126:74,new_money:54,pity:damaged?66:42,
   supercharge:103,deadeye:92,depth_charge:100,horn:enemyTypes.size?104:60,piracy:opp.inventory.some(item=>!['Legendary','Mythical'].includes(ITEMS[item.type]?.rarity))?106:24,
   stall:96,tariff:opp.shopUnlocked?98:52,killing_blow:92,meteor:64,pirate_token:bot.shop.some(stock=>ITEMS[stock.type]?.cost>=150)?90:58,
   shield:enemyTypes.has('crackshot')?24:ownShields?40:78,repair:damaged?105:15,fogcast:92,trojan_vessel:65,spyglass:64,
@@ -1275,7 +1349,7 @@ function commanderShopPhase(){
  // Trade out stale or redundant gear when a genuinely stronger countermeasure
  // appears, especially when the five-slot inventory is full.
  if(ranked.length){
-  const weakest=p.inventory.filter(item=>!itemIsDisabled(item)&&!['loan','invest'].includes(item.type)).map(item=>({item,value:commanderItemValue(item.type,p,opp)})).sort((a,b)=>a.value-b.value)[0];
+  const weakest=p.inventory.filter(item=>!itemIsDisabled(item)&&!item.unsellable&&!['loan','invest'].includes(item.type)).map(item=>({item,value:commanderItemValue(item.type,p,opp)})).sort((a,b)=>a.value-b.value)[0];
   const full=p.inventory.length>=inventoryLimit(game),better=weakest&&ranked[0].utility>weakest.value+18;
   if(weakest&&(full||better)&&ranked[0].value>52&&ranked[0].utility>weakest.value+18)sellItem(game,'guest',weakest.item.id);
  }
@@ -1405,8 +1479,8 @@ function botShopPhase(){
  if(botDifficulty==='commander'){commanderShopPhase();return;}
  const p=game.players.guest,opp=game.players.host;
  const priorities=botDifficulty==='hard'
-  ?['double_tap','cash_boost','follow_up','bounty_hunter','radar','meteor_shower','retaliator','new_money','spirit_leviathan','ghost_vessel','trust_fund','supercharge','depth_charge','deadeye','crackshot','refresh','cursed_artifact','meteor','horn','stall','tariff','killing_blow']
-  :['double_tap','cash_boost','crackshot','follow_up','bounty_hunter','new_money','meteor_shower','radar','supercharge','horn','meteor'];
+  ?['double_tap','cash_boost','vampirism','mystery_box','follow_up','bounty_hunter','radar','meteor_shower','retaliator','new_money','spirit_leviathan','ghost_vessel','trust_fund','supercharge','depth_charge','deadeye','crackshot','refresh','cursed_artifact','meteor','horn','stall','tariff','killing_blow']
+  :['double_tap','cash_boost','vampirism','mystery_box','crackshot','follow_up','bounty_hunter','new_money','meteor_shower','radar','supercharge','horn','meteor'];
  let bought=0;const limit=botDifficulty==='hard'?2:1;
  while(bought<limit&&p.inventory.length<inventoryLimit(game)&&!game.armageddon&&game.active==='guest'&&!game.winner){
   const ranked=p.shop.map(stock=>({stock,rank:priorities.indexOf(stock.type)})).filter(x=>x.rank>=0&&(x.stock.type!=='cursed_artifact'||opp.inventory.some(item=>item.type==='piracy'))).sort((a,b)=>a.rank-b.rank);
