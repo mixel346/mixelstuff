@@ -69,13 +69,43 @@ body.armageddon .tag{border-color:#a7652c;background:#402513;color:#ffd09a}
 .match-end-fleet-toggle span{white-space:normal}
 @media(max-width:700px){.board-head-actions{align-items:flex-end;flex-direction:column}.fleet-toggle{font-size:9px}}
 
+/* Encyclopedia and the temporary Silencer status. */
+.silenced-tag{display:inline-block;margin-top:5px;padding:3px 7px;border:1px solid #65717c;border-radius:6px;background:#1a252d;color:#cbd6dd;font-size:9px;font-weight:900;letter-spacing:.1em}
+.encyclopedia-overlay{position:fixed;inset:0;z-index:12;display:grid;place-items:center;padding:16px;background:#02070be8;backdrop-filter:blur(6px)}
+.encyclopedia-card{width:min(980px,100%);max-height:min(90vh,900px);display:flex;flex-direction:column;overflow:hidden;padding:20px;background:linear-gradient(155deg,#102334,#091521);border:1px solid #3c6178;border-radius:16px;box-shadow:0 24px 80px #000c}
+.encyclopedia-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.encyclopedia-kicker{font-size:9px;font-weight:850;letter-spacing:.2em;color:var(--cyan)}
+.encyclopedia-header h2{margin:3px 0;font-size:23px;letter-spacing:.06em}
+.encyclopedia-header p{margin:0;color:var(--muted);font-size:11px}
+.encyclopedia-tabs{display:flex;gap:7px;margin:13px 0 10px;padding:4px;background:#07131e;border:1px solid var(--line);border-radius:9px}
+.encyclopedia-tab{flex:1;background:transparent;border-color:transparent;color:var(--muted);font-weight:800}
+.encyclopedia-tab.active{background:#14384b;border-color:#34758b;color:#e2faff}
+.encyclopedia-tab span{margin-left:4px;color:#89a9bc;font-size:10px}
+.encyclopedia-tools{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.encyclopedia-tools input{max-width:370px;padding:8px 10px;font-size:12px}
+.encyclopedia-tools .micro{margin-left:auto;text-align:right}
+.encyclopedia-content{overflow:auto;min-height:120px;padding:2px 3px 5px}
+.encyclopedia-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.encyclopedia-entry{display:flex;gap:11px;min-width:0;padding:11px;border:1px solid #203b4e;border-radius:9px;background:linear-gradient(145deg,#0c1d2b,#091521)}
+.encyclopedia-icon{display:grid;place-items:center;flex:none;width:36px;height:36px;border:1px solid #29475b;border-radius:8px;background:#0a1c2a;font-size:20px}
+.encyclopedia-entry-main{min-width:0;flex:1}
+.encyclopedia-entry-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px}
+.encyclopedia-entry-head strong{font-size:12px;overflow-wrap:anywhere}
+.encyclopedia-meta{color:var(--gold);font-size:10px;font-weight:800;white-space:nowrap}
+.encyclopedia-tags{display:flex;flex-wrap:wrap;gap:5px;margin:3px 0 5px}
+.encyclopedia-tag{padding:2px 6px;border:1px solid #294558;border-radius:99px;color:#9fb8c8;font-size:8px;letter-spacing:.07em;text-transform:uppercase}
+.encyclopedia-description{margin:0;color:#a9bdca;font-size:10px;line-height:1.4}
+.encyclopedia-section-title{grid-column:1/-1;margin:7px 0 0;padding:5px 2px 2px;color:#8fa9bb;font-size:9px;font-weight:900;letter-spacing:.15em;text-transform:uppercase;border-bottom:1px solid #203849}
+.encyclopedia-empty{grid-column:1/-1;padding:25px;text-align:center;border:1px dashed #2a4052;border-radius:9px;color:var(--muted);font-size:12px}
+@media(max-width:650px){.encyclopedia-card{padding:13px}.encyclopedia-grid{grid-template-columns:1fr}.encyclopedia-tools{align-items:stretch;flex-direction:column}.encyclopedia-tools input{max-width:none}.encyclopedia-tools .micro{margin-left:0;text-align:left}.encyclopedia-header h2{font-size:19px}}
+
 </style>
 </head>
 <body>
 <div class="app">
   <header class="topbar">
     <div class="brand"><div class="mark">♆</div><div><h1>LEVIATHAN</h1><small>NAVAL ROGUELIKE // PROTOTYPE</small></div></div>
-    <div class="topbar-actions"><button id="leaveMatchBtn" class="danger hidden" type="button">Leave match</button><div class="status-pill" id="connectionStatus">● NOT CONNECTED</div></div>
+    <div class="topbar-actions"><button id="encyclopediaBtn" type="button" aria-haspopup="dialog" aria-controls="encyclopediaOverlay">📚 Encyclopedia</button><button id="leaveMatchBtn" class="danger hidden" type="button">Leave match</button><div class="status-pill" id="connectionStatus">● NOT CONNECTED</div></div>
   </header>
 
   <section id="testModePanel" class="test-tools hidden" aria-live="polite"><div><strong>⚠ TESTMODE ENABLED</strong><div class="micro">Host-only tools · Unlimited free ship deployment and shop rerolls</div></div><div class="test-tools-controls"><label class="micro" for="testCreditsAmount">ADD CREDITS</label><input id="testCreditsAmount" type="number" min="1" max="1000000000" step="1" value="1000"><button class="primary" id="testGiveCreditsBtn" type="button">Give credits</button></div><div class="test-tools-status" id="testModeStatus">Testmode active.</div></section>
@@ -171,7 +201,7 @@ body.armageddon .tag{border-color:#a7652c;background:#402513;color:#ffd09a}
   </section>
 
   <section id="gameScreen" class="hidden">
-    <div class="turn-banner" id="gameTurnBanner"><div><strong id="turnLabel">Waiting…</strong><div class="micro" id="turnSubLabel">Your fleet is at sea.</div><span id="armageddonTag" class="armageddon-tag hidden">☄ ARMAGEDDON</span></div><div class="turn-timer-wrap"><span class="micro" id="turnTimerCaption">TURN TIMER</span><strong id="turnTimer" class="turn-timer">03:00</strong></div><div style="text-align:right"><div class="credits" id="gameCredits">150 CR</div><div class="micro" id="turnNumber">TURN 1</div></div></div>
+    <div class="turn-banner" id="gameTurnBanner"><div><strong id="turnLabel">Waiting…</strong><div class="micro" id="turnSubLabel">Your fleet is at sea.</div><span id="armageddonTag" class="armageddon-tag hidden">☄ ARMAGEDDON</span><span id="silencedTag" class="silenced-tag hidden">🔇 SILENCED · 5 TURNS</span></div><div class="turn-timer-wrap"><span class="micro" id="turnTimerCaption">TURN TIMER</span><strong id="turnTimer" class="turn-timer">03:00</strong></div><div style="text-align:right"><div class="credits" id="gameCredits">150 CR</div><div class="micro" id="turnNumber">TURN 1</div></div></div>
     <div class="summary-reopen-row"><button id="viewOpponentInventoryBtn" class="hidden">View opponent inventory</button></div>
     <div class="play-layout">
       <section class="board-panel" id="ownPanel"><div class="board-head"><div><h3 id="ownBoardTitle">Your fleet</h3><div class="board-sub" id="ownBoardSub">Friendly waters</div></div><span class="tag">YOUR BOARD</span></div><div class="board" id="ownBoard"></div><div class="board-legend"><span><i class="dot"></i> Ship</span><span><i class="dot hit"></i> Damaged</span><span><i class="dot miss"></i> Incoming miss</span><span><i class="dot shield"></i> Shield</span><span>💥 Crackshot mark · cannot repair</span><span>🚢 Moved ship · current position</span></div></section>
@@ -187,6 +217,14 @@ body.armageddon .tag{border-color:#a7652c;background:#402513;color:#ffd09a}
 </div>
 
 <div id="modalCover" class="modal-cover hidden"><div class="modal"><h3 id="modalTitle">Choose</h3><p id="modalText"></p><div id="modalContent"></div><div class="modal-actions"><button id="modalCancel">Cancel</button><button id="modalConfirm" class="primary">Confirm</button></div></div></div>
+<div id="encyclopediaOverlay" class="encyclopedia-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="encyclopediaTitle">
+  <section class="encyclopedia-card">
+    <header class="encyclopedia-header"><div><div class="encyclopedia-kicker">LEVIATHAN FIELD GUIDE</div><h2 id="encyclopediaTitle">Encyclopedia</h2><p>Ships and items documented in the current game.</p></div><button id="closeEncyclopediaBtn" type="button" class="danger">Close ✕</button></header>
+    <div class="encyclopedia-tabs" role="tablist" aria-label="Encyclopedia category"><button type="button" class="encyclopedia-tab active" data-ency-tab="ships" aria-selected="true">🚢 Ships <span id="encyShipCount"></span></button><button type="button" class="encyclopedia-tab" data-ency-tab="items" aria-selected="false">🎒 Items <span id="encyItemCount"></span></button></div>
+    <div class="encyclopedia-tools"><input id="encyclopediaSearch" type="search" placeholder="Search the field guide…" autocomplete="off" aria-label="Search encyclopedia"><span id="encyclopediaSubhead" class="micro">All available vessels</span></div>
+    <div id="encyclopediaContent" class="encyclopedia-content"></div>
+  </section>
+</div>
 <div id="matchEndOverlay" class="match-end-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="matchEndTitle">
   <div class="match-end-card">
     <div class="match-end-kicker">MATCH CONCLUDED</div>
@@ -262,6 +300,7 @@ const ITEMS = {
   vampirism:{name:'Vampirism',icon:'🧛',rarity:'Rare',cost:150,type:'Passive',desc:'Hitting an enemy’s ship will repair a random tile on one of your unsunken ships.'},
   new_money:{name:'New Money',icon:'💰',rarity:'Rare',cost:110,type:'Passive',desc:'A missed shot grants 30 credits.'},
   refresh:{name:'Refresh',icon:'👁️‍🗨️',rarity:'Rare',cost:150,type:'Active',desc:'Reloads your playing field, removing any hits that were fake or have since moved.',target:false},
+  silencer:{name:'Silencer',icon:'🔇',rarity:'Rare',cost:130,type:'Active',desc:'Your opponent will not receive any chat messages for 5 turns.',target:false},
   pirate_token:{name:'Pirate Token',icon:'🪙',rarity:'Rare',cost:150,type:'Active',desc:'Your next shop purchase is free.',target:false},
   ship_sweeper:{name:'Ship Sweeper',icon:'🧹',rarity:'Legendary',cost:250,type:'Passive',desc:'After your shot, report how many adjacent tiles contain ship parts.'},
   double_tap:{name:'Double Tap',icon:'‼️',rarity:'Legendary',cost:250,type:'Passive',desc:'Gain one extra attack each turn.'},
@@ -317,10 +356,17 @@ function shipAt(p,x,y){for(const s of p.ships)if(s.cells.some(c=>c.x===x&&c.y===
 function cellAt(s,x,y){return s.cells.find(c=>c.x===x&&c.y===y)||null;}
 function shipSunk(s){const hp=s.hp||SHIPS[s.type].hp||1;return s.cells.every(c=>c.damage>=hp);}
 function isShipActive(s){return !s.sunk && !shipSunk(s);}
-function addEvent(g,text,kind='normal',to=null){g.events.push({id:uid(),text,kind,to,at:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});if(g.events.length>120)g.events.splice(0,g.events.length-120);}
-function privateEvent(g,pid,text,kind='private'){
- // Private notices are visible only to their intended recipient.
- addEvent(g,text,kind,[pid]);
+function addEvent(g,text,kind='normal',to=null,allowSilencedFor=null){
+ // A silenced player never receives messages generated during their silence, even
+ // if they open the combat log after the effect expires.
+ const hiddenFor=Object.keys(g.players||{}).filter(pid=>(g.players[pid]?.silencedTurns||0)>0&&pid!==allowSilencedFor);
+ const event={id:uid(),text,kind,to,hiddenFor,at:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
+ g.events.push(event);if(g.events.length>120)g.events.splice(0,g.events.length-120);return event;
+}
+function privateEvent(g,pid,text,kind='private',allowWhileSilenced=false){
+ // Private notices are visible only to their intended recipient. The optional
+ // override is reserved for the one message that announces a Silencer effect.
+ addEvent(g,text,kind,[pid],allowWhileSilenced?pid:null);
 }
 function recordShotPair(attacker,target,x,y,attackData,incomingData){
  const shotId=uid();
@@ -390,7 +436,7 @@ function applyVampirismOnHit(g,attackerId){
 }
 function notifyOpponent(g,ownerId,text){privateEvent(g,other(ownerId),text,'private');}
 function other(pid){return pid==='host'?'guest':'host';}
-function makePlayer(id,name,settings=DEFAULT_MATCH_SETTINGS){return {id,name,connectedOnce:false,credits:normalizeMatchSettings(settings).startingCredits,ships:[],inventory:[],acquiredUnique:[],ready:false,turns:0,shop:[],shopUnlocked:false,rerollCount:0,rerollsThisTurn:0,attacks:[],incoming:[],decoys:[],fog:[],skipTurns:0,tariffTurns:0,jokerCharges:0,killingBlowCharges:0,deadeyeCharges:0,depthChargeCharges:0,pirateTokenArmed:false,killingShotPending:0,bonusShots:0,shotsLeft:0,followUpTriggered:false,cheatDeathUsed:false,peekUsed:0,peekBought:0,peekSeenTypes:[],turnItemsBought:0,attackedThisTurn:false};}
+function makePlayer(id,name,settings=DEFAULT_MATCH_SETTINGS){return {id,name,connectedOnce:false,credits:normalizeMatchSettings(settings).startingCredits,ships:[],inventory:[],acquiredUnique:[],ready:false,turns:0,shop:[],shopUnlocked:false,rerollCount:0,rerollsThisTurn:0,attacks:[],incoming:[],decoys:[],fog:[],skipTurns:0,tariffTurns:0,silencedTurns:0,jokerCharges:0,killingBlowCharges:0,deadeyeCharges:0,depthChargeCharges:0,pirateTokenArmed:false,killingShotPending:0,bonusShots:0,shotsLeft:0,followUpTriggered:false,cheatDeathUsed:false,peekUsed:0,peekBought:0,peekSeenTypes:[],turnItemsBought:0,attackedThisTurn:false};}
 function newGame(hostName,settings=menuPreferences){const selected=normalizeMatchSettings(settings);const g={phase:'deploy',settings:selected,armageddon:false,hostId:'host',guestId:'guest',active:'host',round:1,turnEndsAt:0,players:{host:makePlayer('host',hostName||'Captain',selected),guest:makePlayer('guest','Opponent',selected)},events:[],winner:null,geraldClaimed:false,matchUniqueClaims:{},testMode:false};addEvent(g,'A new LEVIATHAN match has been initiated.','system');return g;}
 function setConnection(text,online=false){$('connectionStatus').textContent='● '+text;$('connectionStatus').classList.toggle('online',online);}
 function showScreen(which){['connectScreen','deployScreen','gameScreen'].forEach(id=>$(id).classList.toggle('hidden',id!==which));$('leaveMatchBtn')?.classList.toggle('hidden',which==='connectScreen'||(!game&&!view));}
@@ -561,7 +607,7 @@ async function createHostPeerWithCode(code){
  if(!result.ok){candidate.destroy();throw result.err||new Error('Could not restore the host room.');}
  bindHostPeer(candidate,result.id);return;
 }
-function viewFor(g,pid){const you=g.players[pid],opp=g.players[other(pid)];const sunk=opp.ships.filter(shipSunk).map(s=>({type:s.type,name:shipName(s),cells:s.cells.map(c=>({x:c.x,y:c.y})),disguiseType:s.disguiseType}));return {phase:g.phase,settings:normalizeMatchSettings(g.settings||DEFAULT_MATCH_SETTINGS),armageddon:!!g.armageddon,myId:pid,active:g.active,round:g.round,turnEndsAt:g.turnEndsAt||0,winner:g.winner,geraldClaimed:g.geraldClaimed,testMode:pid==='host'&&!!g.testMode,events:g.events.filter(e=>!e.to||e.to.includes(pid)),you:{id:you.id,name:you.name,credits:you.credits,ships:you.ships,inventory:you.inventory,ready:you.ready,turns:you.turns,shop:you.shop,shopUnlocked:you.shopUnlocked,rerollCost:10+you.rerollCount*10,rerollsThisTurn:you.rerollsThisTurn,attacks:you.attacks,incoming:you.incoming,decoys:you.decoys,fog:you.fog,skipTurns:you.skipTurns,tariffTurns:you.tariffTurns,shotsLeft:you.shotsLeft,turnItemsBought:you.turnItemsBought,peekBought:you.peekBought,cheatDeathUsed:you.cheatDeathUsed,acquiredUnique:you.acquiredUnique,attackedThisTurn:you.attackedThisTurn,pirateTokenArmed:you.pirateTokenArmed},enemy:{id:opp.id,name:opp.name,ready:opp.ready,attacks:opp.attacks,sunkShips:sunk,turns:opp.turns,inventory:g.winner?opp.inventory.map(inst=>({type:inst.type})):null,originalFleet:g.winner?cloneFleetRecord(g.originalFleets?.[other(pid)]):null,curseMultiplier:Math.pow(1.5,countItem(opp,'poseidons_curse'))}};}
+function viewFor(g,pid){const you=g.players[pid],opp=g.players[other(pid)];const sunk=opp.ships.filter(shipSunk).map(s=>({type:s.type,name:shipName(s),cells:s.cells.map(c=>({x:c.x,y:c.y})),disguiseType:s.disguiseType}));return {phase:g.phase,settings:normalizeMatchSettings(g.settings||DEFAULT_MATCH_SETTINGS),armageddon:!!g.armageddon,myId:pid,active:g.active,round:g.round,turnEndsAt:g.turnEndsAt||0,winner:g.winner,geraldClaimed:g.geraldClaimed,testMode:pid==='host'&&!!g.testMode,events:g.events.filter(e=>(!e.to||e.to.includes(pid))&&!(e.hiddenFor||[]).includes(pid)),you:{id:you.id,name:you.name,credits:you.credits,silencedTurns:you.silencedTurns||0,ships:you.ships,inventory:you.inventory,ready:you.ready,turns:you.turns,shop:you.shop,shopUnlocked:you.shopUnlocked,rerollCost:10+you.rerollCount*10,rerollsThisTurn:you.rerollsThisTurn,attacks:you.attacks,incoming:you.incoming,decoys:you.decoys,fog:you.fog,skipTurns:you.skipTurns,tariffTurns:you.tariffTurns,shotsLeft:you.shotsLeft,turnItemsBought:you.turnItemsBought,peekBought:you.peekBought,cheatDeathUsed:you.cheatDeathUsed,acquiredUnique:you.acquiredUnique,attackedThisTurn:you.attackedThisTurn,pirateTokenArmed:you.pirateTokenArmed},enemy:{id:opp.id,name:opp.name,ready:opp.ready,attacks:opp.attacks,sunkShips:sunk,turns:opp.turns,inventory:g.winner?opp.inventory.map(inst=>({type:inst.type})):null,originalFleet:g.winner?cloneFleetRecord(g.originalFleets?.[other(pid)]):null,curseMultiplier:Math.pow(1.5,countItem(opp,'poseidons_curse'))}};}
 function normalizeShieldLayers(g){if(!g?.players)return;for(const player of Object.values(g.players))for(const ship of player.ships||[])for(const cell of ship.cells||[]){const spent=Math.max(0,Number(cell.shieldHits)||0),total=Math.max(spent,Number(cell.shields)||0);cell.shieldHits=spent;cell.shields=Math.min(total,spent+1);}}
 function sendSnapshot(){if(!game)return;normalizeShieldLayers(game);view=viewFor(game,myId);render();if(isHost){persistHostSession();send({type:'snapshot',view:viewFor(game,'guest')});}}
 function syncGame(){sendSnapshot();}
@@ -688,6 +734,12 @@ function sellItem(g,pid,instanceId){const p=g.players[pid];if(g.active!==pid){pr
 function consumeItem(p,id){const idx=p.inventory.findIndex(i=>i.id===id);if(idx<0)return null;return p.inventory.splice(idx,1)[0];}
 function useImmediate(g,pid,instanceId){const p=g.players[pid],opp=g.players[other(pid)],inst=p.inventory.find(i=>i.id===instanceId);if(!inst)return;if(itemIsDisabled(inst)){privateEvent(g,pid,`${itemName(inst.type)} is disabled and cannot be used this turn.`,'bad');return;}if(p.attackedThisTurn){privateEvent(g,pid,'Active items must be used before your first attack.');return;}const type=inst.type;if(ITEMS[type].target){privateEvent(g,pid,'Select a tile on the appropriate board to use this item.');return;}consumeItem(p,instanceId);
  switch(type){
+  case'silencer':{
+   opp.silencedTurns=(opp.silencedTurns||0)+5;
+   privateEvent(g,other(pid),'🔇 The seas have gone silent…','bad',true);
+   privateEvent(g,pid,`🔇 ${opp.name} is silenced for ${opp.silencedTurns} turns.`,'good');
+   break;
+  }
   case'peek':{
    const inventory=opp.inventory.filter(i=>ITEMS[i.type]);
    if(!inventory.length){privateEvent(g,pid,'Your opponent has no items to reveal.');break;}
@@ -959,6 +1011,10 @@ function finishTurn(g,pid,skipped=false,timedOut=false){
   // An end-of-turn effect can finish the match; do not process economy or timers afterward.
   if(g.winner)return true;
   p.turns++;const turnNo=p.turns;
+  if(!wasSkipped&&p.silencedTurns>0){
+   p.silencedTurns--;
+   if(p.silencedTurns===0)privateEvent(g,currentPid,'🔊 The seas have returned. Your chat is restored.','good');
+  }
   // A skipped turn advances turn-based timers, but grants no turn-end credits.
   if(!wasSkipped){
    const base=2+Math.floor(2*Math.log(turnNo));
@@ -1017,7 +1073,7 @@ function finishTurn(g,pid,skipped=false,timedOut=false){
 // ---------------------------------------------------------------------------
 // CHAT AND RENDERING
 // ---------------------------------------------------------------------------
-function handleChat(pid,text){const t=String(text||'').trim().slice(0,180);if(!t||!game)return;addEvent(game,`${game.players[pid].name}: ${t}`,'normal');syncGame();}
+function handleChat(pid,text){const t=String(text||'').trim().slice(0,180);if(!t||!game)return;addEvent(game,`${game.players[pid].name}: ${t}`,'normal',null,pid);syncGame();}
 function applyBoardGrid(element){
  if(!element)return;const n=boardSize(),compact=window.matchMedia?.('(max-width: 700px)').matches;
  element.style.gridTemplateColumns=`${compact?17:22}px repeat(${n},minmax(0,1fr))`;
@@ -1110,7 +1166,7 @@ function renderDeploy(){const p=view.you,e=view.enemy;$('deployRoomCode').value=
  const html=buildDeployBoard(p);$('deployBoard').innerHTML=html;applyBoardGrid($('deployBoard'));if(deployPreview&&selectedShip)updateDeployPreview(deployPreview.x,deployPreview.y);
 }
 function buildDeployBoard(p){const n=boardSize();let h='<div class="axis"></div>';for(let x=0;x<n;x++)h+=`<div class="axis">${String.fromCharCode(65+x)}</div>`;for(let y=0;y<n;y++){h+=`<div class="axis">${y+1}</div>`;for(let x=0;x<n;x++){const s=shipAt(p,x,y);h+=`<button class="cell ${s?'occupied':''}" data-board="deploy" data-x="${x}" data-y="${y}" title="${s?esc(SHIPS[s.type].name):coord(x,y)}" ${p.ready?'disabled':''}><span class="glyph">${s?'▰':''}</span></button>`;}}return h;}
-function renderGame(){const p=view.you,e=view.enemy,active=view.active===view.myId;const canRevealOriginal=view.phase==='over'&&Array.isArray(e.originalFleet);$('originalFleetToggleWrap').classList.toggle('hidden',!canRevealOriginal);$('originalFleetToggle').checked=!!showOriginalFleet&&canRevealOriginal;$('originalFleetLegend').classList.toggle('hidden',!showOriginalFleet||!canRevealOriginal);const banner=$('gameTurnBanner');banner.classList.toggle('victory',!!view.winner&&view.winner===view.myId);banner.classList.toggle('defeat',!!view.winner&&view.winner!==view.myId);$('turnLabel').textContent=view.winner?(view.winner===view.myId?'VICTORY — ENEMY FLEET DESTROYED':'DEFEAT — YOUR FLEET WAS SUNK'):active?'YOUR TURN':`${e.name.toUpperCase()} IS MOVING`;$('turnSubLabel').textContent=view.winner?(view.winner===view.myId?'The seas are yours.':'Your fleet has been defeated.'):(active?`${p.shotsLeft} attack${p.shotsLeft===1?'':'s'} remaining · You can shop and use items before firing.`:'Waiting for your opponent to finish their turn.');$('gameCredits').textContent=`${p.credits} CR`;$('turnNumber').textContent=`YOUR TURN ${p.turns+1} · ROUND ${view.round}`;$('armageddonTag').classList.toggle('hidden',!view.armageddon);$('turnTimerCaption').textContent=view.armageddon?'ARMAGEDDON CLOCK':'TURN TIMER';$('enemyBoardLegendLabel').textContent=`${String.fromCharCode(64+boardSize())} / 1–${boardSize()}`;$('ownBoardTitle').textContent=`${p.name} · Fleet`;$('enemyBoardTitle').textContent=`${e.name} · Waters`;$('ownBoardSub').textContent=pending&&(pending.target==='own'||pending.target==='move')?pending.label:'Friendly waters';$('enemyBoardSub').textContent=pending&&pending.target==='enemy'?pending.label:active?(pending?'Finish selecting your item target.':hasItemView('crackshot')?'💥 Crackshot active · All your hits bypass Shields and cannot be repaired.':'Select an enemy tile to fire.'):'Targeting is locked until your turn.';$('ownPanel').classList.toggle('active-target',!!pending&&(pending.target==='own'||pending.target==='move'));$('enemyPanel').classList.toggle('active-target',!!pending&&pending.target==='enemy'||active&&!pending);
+function renderGame(){const p=view.you,e=view.enemy,active=view.active===view.myId;const canRevealOriginal=view.phase==='over'&&Array.isArray(e.originalFleet);$('originalFleetToggleWrap').classList.toggle('hidden',!canRevealOriginal);$('originalFleetToggle').checked=!!showOriginalFleet&&canRevealOriginal;$('originalFleetLegend').classList.toggle('hidden',!showOriginalFleet||!canRevealOriginal);const banner=$('gameTurnBanner');banner.classList.toggle('victory',!!view.winner&&view.winner===view.myId);banner.classList.toggle('defeat',!!view.winner&&view.winner!==view.myId);$('turnLabel').textContent=view.winner?(view.winner===view.myId?'VICTORY — ENEMY FLEET DESTROYED':'DEFEAT — YOUR FLEET WAS SUNK'):active?'YOUR TURN':`${e.name.toUpperCase()} IS MOVING`;$('turnSubLabel').textContent=view.winner?(view.winner===view.myId?'The seas are yours.':'Your fleet has been defeated.'):(active?`${p.shotsLeft} attack${p.shotsLeft===1?'':'s'} remaining · You can shop and use items before firing.`:'Waiting for your opponent to finish their turn.');$('gameCredits').textContent=`${p.credits} CR`;$('turnNumber').textContent=`YOUR TURN ${p.turns+1} · ROUND ${view.round}`;$('armageddonTag').classList.toggle('hidden',!view.armageddon);$('silencedTag').classList.toggle('hidden',!(p.silencedTurns>0));$('silencedTag').textContent=`🔇 SILENCED · ${p.silencedTurns||0} TURN${p.silencedTurns===1?'':'S'}`;$('turnTimerCaption').textContent=view.armageddon?'ARMAGEDDON CLOCK':'TURN TIMER';$('enemyBoardLegendLabel').textContent=`${String.fromCharCode(64+boardSize())} / 1–${boardSize()}`;$('ownBoardTitle').textContent=`${p.name} · Fleet`;$('enemyBoardTitle').textContent=`${e.name} · Waters`;$('ownBoardSub').textContent=pending&&(pending.target==='own'||pending.target==='move')?pending.label:'Friendly waters';$('enemyBoardSub').textContent=pending&&pending.target==='enemy'?pending.label:active?(pending?'Finish selecting your item target.':hasItemView('crackshot')?'💥 Crackshot active · All your hits bypass Shields and cannot be repaired.':'Select an enemy tile to fire.'):'Targeting is locked until your turn.';$('ownPanel').classList.toggle('active-target',!!pending&&(pending.target==='own'||pending.target==='move'));$('enemyPanel').classList.toggle('active-target',!!pending&&pending.target==='enemy'||active&&!pending);
  boardMarkup('ownBoard','own');boardMarkup('enemyBoard','enemy');if(fogPreview&&pending?.target==='own')updateFogPreview(fogPreview.x,fogPreview.y);$('chatLog').innerHTML=view.events.map(ev=>`<div class="event ${ev.kind||''}"><span class="time">${esc(ev.at||'')}</span>${esc(ev.text)}</div>`).join('');$('chatLog').scrollTop=$('chatLog').scrollHeight;$('logCount').textContent=`${view.events.length} EVENTS`;
  renderShop();renderInventory();updateTurnTimer();$('endTurnBtn').disabled=!active||p.shotsLeft>0||!!view.winner;$('endTurnBtn').textContent=active?(p.shotsLeft>0?`Fire ${p.shotsLeft} more`:'End turn'):'Opponent turn';}
 function renderShop(){
@@ -1313,7 +1369,7 @@ function commanderItemValue(type,bot,opp){
  const enemySignals=commanderEnemySignals(),enemyHasShields=enemySignals.shielded.length>0;
  const early=bot.turns<8,late=bot.turns>22;
  const values={
-  double_tap:132,follow_up:120,spirit_leviathan:170,crackshot:enemyHasShields?145:78,radar:enemyTypes.has('ghost_vessel')?145:68,
+  double_tap:132,follow_up:120,spirit_leviathan:170,crackshot:enemyHasShields?145:78,radar:enemyTypes.has('ghost_vessel')?145:68,silencer:bot.turns<15?78:48,
   meteor_shower:112,bounty_hunter:95,trust_fund:activeShips.length>=3?112:80,cheat_death:112,poseidons_curse:84,
   ghost_vessel:enemyTypes.has('radar')?18:112,retaliator:enemyTypes.has('double_tap')||enemyTypes.has('follow_up')?112:88,
   cash_boost:early?102:late?20:62,gerald:early?100:late?24:65,mystery_box:early?116:late?66:90,vampirism:damaged?126:74,new_money:54,pity:damaged?66:42,
@@ -1417,7 +1473,7 @@ function commanderUseItems(){
  if(!game||game.active!=='guest'||game.winner)return;
  const p=game.players.guest,opp=game.players.host;
  commanderUseTargetedItems();
- const immediateOrder=['refresh','horn','piracy','stall','tariff','joker','supercharge','deadeye','depth_charge','killing_blow','meteor','gamble'];
+ const immediateOrder=['refresh','horn','piracy','silencer','stall','tariff','joker','supercharge','deadeye','depth_charge','killing_blow','meteor','gamble'];
  for(const type of immediateOrder){
   const candidates=p.inventory.filter(item=>item.type===type&&!itemIsDisabled(item));
   for(const inst of candidates){if(p.attackedThisTurn||game.active!=='guest'||game.winner)break;
@@ -1479,7 +1535,7 @@ function botShopPhase(){
  if(botDifficulty==='commander'){commanderShopPhase();return;}
  const p=game.players.guest,opp=game.players.host;
  const priorities=botDifficulty==='hard'
-  ?['double_tap','cash_boost','vampirism','mystery_box','follow_up','bounty_hunter','radar','meteor_shower','retaliator','new_money','spirit_leviathan','ghost_vessel','trust_fund','supercharge','depth_charge','deadeye','crackshot','refresh','cursed_artifact','meteor','horn','stall','tariff','killing_blow']
+  ?['double_tap','cash_boost','vampirism','mystery_box','follow_up','bounty_hunter','radar','meteor_shower','retaliator','new_money','spirit_leviathan','ghost_vessel','trust_fund','supercharge','depth_charge','deadeye','crackshot','refresh','cursed_artifact','meteor','horn','silencer','stall','tariff','killing_blow']
   :['double_tap','cash_boost','vampirism','mystery_box','crackshot','follow_up','bounty_hunter','new_money','meteor_shower','radar','supercharge','horn','meteor'];
  let bought=0;const limit=botDifficulty==='hard'?2:1;
  while(bought<limit&&p.inventory.length<inventoryLimit(game)&&!game.armageddon&&game.active==='guest'&&!game.winner){
@@ -1493,7 +1549,7 @@ function botUseItems(){
  if(botDifficulty==='commander'){commanderUseItems();return;}
  const p=game.players.guest;
  const allowed=botDifficulty==='hard'
-  ?new Set(['meteor','refresh','killing_blow','supercharge','stall','joker','tariff','deadeye','pirate_token','depth_charge','gamble','horn'])
+  ?new Set(['meteor','refresh','killing_blow','supercharge','stall','joker','tariff','deadeye','pirate_token','depth_charge','gamble','horn','silencer'])
   :new Set(['killing_blow','supercharge','stall','joker','deadeye','meteor','horn']);
  for(const inst of [...p.inventory]){
   if(game.active!=='guest'||game.winner||p.attackedThisTurn)break;
@@ -1585,6 +1641,29 @@ $('copyReconnectCodeBtn').onclick=()=>copyRoomCode($('reconnectStatus'));
 $('joinRoomCode').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);});
 initializePreferenceUI();['settingBoardSize','settingStartingCredits','settingInventorySlots','settingShopSlots'].forEach(id=>{ $(id).addEventListener('input',savePreferenceUI); $(id).addEventListener('change',savePreferenceUI); });$('resetPreferencesBtn').onclick=()=>{menuPreferences={...DEFAULT_MATCH_SETTINGS};initializePreferenceUI();savePreferenceUI();};$('gameModeMainTab').onclick=()=>selectMainMenuTab('game');$('matchPreferencesTab').onclick=()=>selectMainMenuTab('preferences');
 function selectMenuTab(tab){const multiplayer=tab==='multiplayer';$('multiplayerMenuPanel').classList.toggle('hidden',!multiplayer);$('botMenuPanel').classList.toggle('hidden',multiplayer);$('multiplayerTab').classList.toggle('active',multiplayer);$('botTab').classList.toggle('active',!multiplayer);$('multiplayerTab').setAttribute('aria-selected',String(multiplayer));$('botTab').setAttribute('aria-selected',String(!multiplayer));}
+let encyclopediaTab='ships';
+function shipFootprint(def){const width=Math.max(...def.shape.map(point=>point[0]))+1,height=Math.max(...def.shape.map(point=>point[1]))+1;return `${width} × ${height}`;}
+function renderEncyclopedia(){
+ const query=$('encyclopediaSearch').value.trim().toLowerCase(),content=$('encyclopediaContent');
+ const ships=Object.entries(SHIPS).filter(([id,ship])=>`${id} ${ship.name} ${ship.description}`.toLowerCase().includes(query));
+ const visibleItems=Object.entries(ITEMS).filter(([,item])=>['Common','Uncommon','Rare','Legendary'].includes(item.rarity)&&`${item.name} ${item.desc} ${item.type} ${item.rarity}`.toLowerCase().includes(query));
+ $('encyShipCount').textContent=`(${ships.length})`;$('encyItemCount').textContent=`(${visibleItems.length})`;
+ if(encyclopediaTab==='ships'){
+  $('encyclopediaSubhead').textContent=`${ships.length} vessel${ships.length===1?'':'s'} · All ships in the catalog`;
+  content.innerHTML=ships.length?`<div class="encyclopedia-grid">${ships.map(([id,ship])=>`<article class="encyclopedia-entry"><div class="encyclopedia-icon">🚢</div><div class="encyclopedia-entry-main"><div class="encyclopedia-entry-head"><strong>${esc(ship.name)}</strong><span class="encyclopedia-meta">${ship.cost} CR</span></div><div class="encyclopedia-tags"><span class="encyclopedia-tag">${shipFootprint(ship)} footprint</span><span class="encyclopedia-tag">${ship.shape.length} tiles</span>${ship.classic?'<span class="encyclopedia-tag">Unique</span>':''}</div><p class="encyclopedia-description">${esc(ship.description||'No special ability.')}</p></div></article>`).join('')}</div>`:'<div class="encyclopedia-empty">No ships match your search.</div>';
+ }else{
+  $('encyclopediaSubhead').textContent=`${visibleItems.length} item${visibleItems.length===1?'':'s'} · Common through Legendary`;
+  const order=['Common','Uncommon','Rare','Legendary'];let html='<div class="encyclopedia-grid">';
+  for(const rarity of order){const entries=visibleItems.filter(([,item])=>item.rarity===rarity);if(!entries.length)continue;html+=`<h3 class="encyclopedia-section-title">${rarity}</h3>`;html+=entries.map(([id,item])=>{const price=item.cost<0?`Gain ${Math.abs(item.cost)} CR`:`${item.cost} CR`;return `<article class="encyclopedia-entry"><div class="encyclopedia-icon">${item.icon}</div><div class="encyclopedia-entry-main"><div class="encyclopedia-entry-head"><strong>${esc(item.name)}</strong><span class="encyclopedia-meta">${price}</span></div><div class="encyclopedia-tags"><span class="encyclopedia-tag">${rarity}</span><span class="encyclopedia-tag">${esc(item.type)}</span></div><p class="encyclopedia-description">${esc(item.desc||'No description available.')}</p></div></article>`;}).join('');}
+  html+='</div>';content.innerHTML=visibleItems.length?html:'<div class="encyclopedia-empty">No Common, Uncommon, Rare, or Legendary items match your search.</div>';
+ }
+}
+function openEncyclopedia(){encyclopediaTab='ships';$('encyclopediaSearch').value='';document.querySelectorAll('[data-ency-tab]').forEach(button=>{const active=button.dataset.encyTab===encyclopediaTab;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));});renderEncyclopedia();$('encyclopediaOverlay').classList.remove('hidden');$('closeEncyclopediaBtn').focus();}
+function closeEncyclopedia(){$('encyclopediaOverlay').classList.add('hidden');$('encyclopediaBtn').focus();}
+$('encyclopediaBtn').onclick=openEncyclopedia;$('closeEncyclopediaBtn').onclick=closeEncyclopedia;
+$('encyclopediaOverlay').addEventListener('click',event=>{if(event.target===$('encyclopediaOverlay'))closeEncyclopedia();});
+$('encyclopediaSearch').addEventListener('input',renderEncyclopedia);
+document.querySelectorAll('[data-ency-tab]').forEach(button=>button.addEventListener('click',()=>{encyclopediaTab=button.dataset.encyTab;document.querySelectorAll('[data-ency-tab]').forEach(tab=>{const active=tab===button;tab.classList.toggle('active',active);tab.setAttribute('aria-selected',String(active));});renderEncyclopedia();}));
 $('multiplayerTab').onclick=()=>selectMenuTab('multiplayer');$('botTab').onclick=()=>selectMenuTab('bot');
 document.querySelectorAll('[data-bot-difficulty]').forEach(button=>button.addEventListener('click',()=>{botDifficulty=button.dataset.botDifficulty;document.querySelectorAll('[data-bot-difficulty]').forEach(b=>{const chosen=b===button;b.classList.toggle('selected',chosen);b.setAttribute('aria-pressed',String(chosen));});}));
 $('startBotBtn').onclick=()=>{try{startBotMatch();}catch(err){$('botModeStatus').textContent=`Could not start bot match: ${err?.message||err}`;}};
@@ -1595,7 +1674,7 @@ $('copyDeployRoomCodeBtn').onclick=()=>copyRoomCode($('deployRoomCodeStatus'));
 $('deployRoomCode').onclick=()=>$('deployRoomCode').select();
 $('hostRoomCodeDisplay').onclick=()=>{const range=document.createRange();range.selectNodeContents($('hostRoomCodeDisplay'));const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);};
 $('rotateShipBtn').onclick=rotate;function rotate(){rotation=(rotation+1)%4;clearDeployPreview();$('rotationLabel').textContent=rotation%2===0?'HORIZONTAL':'VERTICAL';renderDeploy();}
-document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.altKey&&e.shiftKey&&e.key.toLowerCase()==='l'){e.preventDefault();if(isHost&&game&&game.phase==='deploy'&&!game.players.host.ready){if(!game.testMode){game.testMode=true;privateEvent(game,'host','⚠ TESTMODE ENABLED. Host-only testing tools are now active.','good');syncGame();}else{$('testModeStatus').textContent='Testmode is already enabled for this match.';}}return;}if(e.key.toLowerCase()==='r'&&!$('deployScreen').classList.contains('hidden')){rotate();}if(e.key==='Escape'&&pending)cancelPending();});
+document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.altKey&&e.shiftKey&&e.key.toLowerCase()==='l'){e.preventDefault();if(isHost&&game&&game.phase==='deploy'&&!game.players.host.ready){if(!game.testMode){game.testMode=true;privateEvent(game,'host','⚠ TESTMODE ENABLED. Host-only testing tools are now active.','good');syncGame();}else{$('testModeStatus').textContent='Testmode is already enabled for this match.';}}return;}if(e.key.toLowerCase()==='r'&&!$('deployScreen').classList.contains('hidden')){rotate();}if(e.key==='Escape'&&!$('encyclopediaOverlay').classList.contains('hidden'))closeEncyclopedia();else if(e.key==='Escape'&&pending)cancelPending();});
 $('testGiveCreditsBtn').onclick=()=>{const amount=Math.floor(Number($('testCreditsAmount').value));if(!Number.isFinite(amount)||amount<1){$('testModeStatus').textContent='Enter a positive whole number of credits.';return;}act({type:'testGiveCredits',amount});};
 $('undoShipBtn').onclick=()=>act({type:'deployRemove'});
 $('readyBtn').onclick=()=>{selectedShip=null;act({type:'ready'});};
