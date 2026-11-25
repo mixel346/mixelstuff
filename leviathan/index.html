@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <title>LEVIATHAN — Naval Roguelike</title>
 <style>
 :root{--bg:#071019;--panel:#0d1a27;--panel2:#112235;--line:#23394d;--text:#e8f1f7;--muted:#8ea5b8;--cyan:#50d9e8;--blue:#1683ab;--red:#e36c73;--gold:#efbf69;--green:#60d6a5;--cell:#102638;--cell2:#17364b;--shadow:0 16px 44px #0008}
@@ -99,6 +99,60 @@ body.armageddon .tag{border-color:#a7652c;background:#402513;color:#ffd09a}
 .encyclopedia-empty{grid-column:1/-1;padding:25px;text-align:center;border:1px dashed #2a4052;border-radius:9px;color:var(--muted);font-size:12px}
 @media(max-width:650px){.encyclopedia-card{padding:13px}.encyclopedia-grid{grid-template-columns:1fr}.encyclopedia-tools{align-items:stretch;flex-direction:column}.encyclopedia-tools input{max-width:none}.encyclopedia-tools .micro{margin-left:0;text-align:left}.encyclopedia-header h2{font-size:19px}}
 
+
+/* Mobile and touch-first refinements. */
+html{min-height:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+body{min-height:100vh;min-height:100dvh;overscroll-behavior-y:contain;}
+button,input,select,textarea{touch-action:manipulation;}
+button{-webkit-tap-highlight-color:transparent;}
+.board{touch-action:pan-y pinch-zoom;-webkit-user-select:none;user-select:none;}
+.cell{touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.cell.preview-move-valid{background:linear-gradient(145deg,#246c91,#174259)!important;border:2px solid #70e4eb!important;box-shadow:inset 0 0 0 1px #d1ffff66,0 0 8px #50d9e866;}
+.cell.preview-move-invalid{background:linear-gradient(145deg,#853741,#4c2028)!important;border:2px solid #ff8993!important;box-shadow:inset 0 0 0 1px #ffc0c466;}
+@media(max-width:760px){
+ .app{width:100%;max-width:none;padding:calc(8px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));}
+ .topbar{align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+ .brand{gap:8px}.mark{width:34px;height:34px;font-size:19px}.brand h1{font-size:17px;letter-spacing:.16em}.brand small{font-size:8px;letter-spacing:.09em}
+ .topbar-actions{width:100%;justify-content:flex-start;gap:7px}.topbar-actions button{min-height:42px;padding:8px 10px;font-size:12px}.status-pill{font-size:10px;padding:7px 9px;}
+ .screen{padding:12px;border-radius:11px}.screen-title{font-size:17px}.sub{font-size:12px;margin-bottom:13px;}
+ .connect-grid,.deploy-layout{grid-template-columns:minmax(0,1fr);}
+ .connect-card{padding:13px}.connect-card button{min-height:44px;width:100%;}
+ .menu-tabs{display:flex;overflow-x:auto;max-width:100%;gap:5px;scrollbar-width:thin}.menu-tab{flex:1 0 max-content;min-height:42px;padding:9px 11px;}
+ .bot-difficulties{grid-template-columns:minmax(0,1fr)}.bot-difficulty{min-height:0;padding:13px}.bot-start-row{align-items:stretch}.bot-start-row button{min-height:46px;width:100%;}
+ .preferences-panel{padding:12px}.preference-grid{grid-template-columns:minmax(0,1fr)}.preference-field{padding:10px}.preference-field select{min-height:44px}
+ .deploy-layout{display:flex;flex-direction:column;gap:11px}.deploy-side{order:-1;width:100%;padding:11px}.board-wrap{order:0;width:100%;}
+ .ship-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;max-height:min(36dvh,360px);overflow-y:auto;overscroll-behavior:contain;padding:2px}.ship-choice{min-height:70px;padding:9px;font-size:11px}.ship-choice strong{font-size:12px;line-height:1.2}.deploy-actions button{min-height:44px;flex:1 1 120px;}
+ .deploy-room-code{padding:9px}.deploy-room-code-head{align-items:flex-start}.deploy-room-code-head button{min-height:42px}.deploy-room-code-text{min-height:52px;font-size:12px;}
+ .play-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;}
+ .board-panel{width:100%;padding:8px;border-radius:10px;overflow-x:auto;overscroll-behavior-x:contain;}.board-wrap{width:100%;overflow-x:auto;overscroll-behavior-x:contain;}
+ .board-head{align-items:flex-start;gap:5px}.board-head h3{font-size:13px}.board-sub{font-size:10px;line-height:1.35;}
+ .board{width:100%;max-width:100%;margin:0 auto;aspect-ratio:1/1;gap:2px;padding:5px;}
+ .axis{font-size:8px}.cell{border-radius:3px;font-size:9px;min-width:0;min-height:0;}
+ .cell .glyph{font-size:clamp(8px,2.8vw,13px)}.cell .shield-glyph,.cell .crackshot-glyph,.cell .ship-position-glyph,.cell .fog-glyph{font-size:clamp(7px,2vw,10px)}
+ .board-legend{font-size:9px;gap:7px;margin-top:6px;}
+ .turn-banner{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;padding:9px;margin-bottom:9px;}
+ .turn-banner>div:first-child{grid-column:1/-1}.turn-banner>div:last-child{text-align:right!important}.turn-timer-wrap{display:flex;align-items:center;gap:8px}.turn-timer{font-size:20px;}
+ .sidebar{grid-column:auto;display:flex;width:100%;gap:9px;}.side-panel{padding:10px}.chat-log{height:150px;max-height:24vh;min-height:110px;}
+ .chat-send input{font-size:16px;min-height:44px}.chat-send button{min-width:58px;min-height:44px;}
+ .shop-list,.inventory-list{max-height:32vh}.shop-item button,.inv-item button{min-height:38px;}
+ .action-row button{min-height:44px;}
+ .reconnect-controls{max-width:none;min-width:100%;flex-wrap:wrap}.reconnect-controls input{flex:1 1 100%;min-height:45px;font-size:16px}.reconnect-controls button{min-height:44px;flex:1;}
+ .encyclopedia-overlay,.match-end-overlay,.modal-cover{padding:calc(7px + env(safe-area-inset-top)) calc(7px + env(safe-area-inset-right)) calc(7px + env(safe-area-inset-bottom)) calc(7px + env(safe-area-inset-left));}
+ .encyclopedia-card,.match-end-card,.modal{width:100%;max-height:calc(100dvh - 14px);overflow:auto;padding:13px;border-radius:12px;}
+ .encyclopedia-header{gap:8px}.encyclopedia-header h2{font-size:18px}.encyclopedia-header button{min-height:42px;white-space:nowrap;}
+ .footer-note{font-size:9px;line-height:1.45;padding:8px 2px;}
+}
+@media(max-width:420px){
+ .app{padding-left:6px;padding-right:6px}.board-panel{padding:6px}.board{gap:1px;padding:4px}.axis{font-size:7px}.ship-choice{padding:7px}.ship-choice .micro{font-size:9px;line-height:1.25}
+ .turn-timer{font-size:18px}.credits{font-size:12px;}
+}
+@media(orientation:landscape) and (max-height:640px) and (min-width:600px){
+ .app{padding-top:7px;padding-bottom:8px}.topbar{margin-bottom:7px}.play-layout{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;}
+ .board-panel{padding:7px}.sidebar{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}.sidebar .side-panel:first-child{grid-row:span 2}.chat-log{height:115px;}
+ .deploy-layout{grid-template-columns:minmax(0,1fr) 280px;gap:9px}.deploy-side{padding:9px}.ship-list{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important;}}
+
 </style>
 </head>
 <body>
@@ -143,7 +197,7 @@ body.armageddon .tag{border-color:#a7652c;background:#402513;color:#ffd09a}
         <button class="primary" id="joinRoomBtn">Join room</button>
       </div>
     </div>
-    <div class="help"><strong>How it works:</strong> The host clicks <em>Create room</em> and sends the six-character code. The guest enters it and clicks <em>Join room</em>; the connection is automatic, with no answer code. A PeerJS signaling service is used only to introduce the two browsers. Game data is sent directly peer-to-peer after they connect.</div>
+    <div class="help"><strong>How it works:</strong> The host clicks <em>Create room</em> and sends the six-character code. The guest enters it and clicks <em>Join room</em>; the connection is automatic, with no answer code. PeerJS signaling introduces the browsers. Game data normally travels peer-to-peer; a TURN relay is available when mobile carrier NATs or firewalls prevent a direct route.</div>
     </div>
     <section id="botMenuPanel" class="bot-setup hidden" role="tabpanel" aria-labelledby="botTab">
       <h3>Challenge the Admiralty</h3>
@@ -184,7 +238,7 @@ body.armageddon .tag{border-color:#a7652c;background:#402513;color:#ffd09a}
     <div class="turn-banner"><div><strong id="deployTitle">Fleet deployment</strong><div class="micro" id="deploySubtitle">Spend your starting credits to place ships.</div></div><div class="credits" id="deployCredits">100 CR</div></div>
     <div class="deploy-layout">
       <div class="board-wrap">
-        <div class="board-head"><div><h3>Your waters</h3><div class="board-sub">Select a ship, then click its starting tile. Press R to rotate.</div></div><span class="tag" id="deployReadyTag">NOT READY</span></div>
+        <div class="board-head"><div><h3>Your waters</h3><div class="board-sub">Select a ship, preview a starting tile, then tap/click the same tile again to place. Use Rotate for orientation.</div></div><span class="tag" id="deployReadyTag">NOT READY</span></div>
         <div id="deployBoard" class="board"></div>
         <div class="board-legend"><span><i class="dot"></i> Your vessel</span><span class="muted">Unspent credits carry into the shop.</span></div>
       </div>
@@ -213,7 +267,7 @@ body.armageddon .tag{border-color:#a7652c;background:#402513;color:#ffd09a}
       </aside>
     </div>
   </section>
-  <div class="footer-note">LEVIATHAN · Single-file game · PeerJS signalling + peer-to-peer game data · Keep the game tab open<span class="footer-disclaimer">DISCLAIMER: this webpage was made with Artificial Intelligence. However, all ideas and gameplay features were created solely by Mixel346, with no AI assistance. TLDR: I suck at HTML</span></div>
+  <div class="footer-note">LEVIATHAN · Single-file game · PeerJS signalling + peer-to-peer data with TURN fallback · Keep the game tab open<span class="footer-disclaimer">DISCLAIMER: this webpage was made with Artificial Intelligence. However, all ideas and gameplay features were created solely by Mixel346, with no AI assistance. TLDR: I suck at HTML</span></div>
 </div>
 
 <div id="modalCover" class="modal-cover hidden"><div class="modal"><h3 id="modalTitle">Choose</h3><p id="modalText"></p><div id="modalContent"></div><div class="modal-actions"><button id="modalCancel">Cancel</button><button id="modalConfirm" class="primary">Confirm</button></div></div></div>
@@ -241,6 +295,7 @@ body.armageddon .tag{border-color:#a7652c;background:#402513;color:#ffd09a}
 </div>
 
 <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+<script>if(!window.Peer){const peerFallback=document.createElement("script");peerFallback.src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js";document.head.appendChild(peerFallback);}</script>
 <script>
 'use strict';
 
@@ -441,6 +496,23 @@ function newGame(hostName,settings=menuPreferences){const selected=normalizeMatc
 function setConnection(text,online=false){$('connectionStatus').textContent='● '+text;$('connectionStatus').classList.toggle('online',online);}
 function showScreen(which){['connectScreen','deployScreen','gameScreen'].forEach(id=>$(id).classList.toggle('hidden',id!==which));$('leaveMatchBtn')?.classList.toggle('hidden',which==='connectScreen'||(!game&&!view));}
 const ROOM_ALPHABET='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function peerOptions(){
+ return {debug:0,config:{
+  iceServers:[
+   {urls:'stun:stun.l.google.com:19302'},
+   {urls:[
+    'turn:eu-0.turn.peerjs.com:3478',
+    'turn:us-0.turn.peerjs.com:3478',
+    'turn:eu-0.turn.peerjs.com:3478?transport=tcp',
+    'turn:us-0.turn.peerjs.com:3478?transport=tcp'
+   ],username:'peerjs',credential:'peerjsp'}
+  ],
+  sdpSemantics:'unified-plan',
+  iceCandidatePoolSize:4,
+  iceTransportPolicy:'all'
+ }};
+}
+
 function makeRoomCode(){let code='';for(let i=0;i<6;i++)code+=ROOM_ALPHABET[rand(ROOM_ALPHABET.length)];return code;}
 function showConnectError(message){$('connectMessage').textContent=message;$('joinRoomBtn').disabled=false;setConnection('CONNECTION ERROR',false);}
 function showReconnectPanel(show,message=''){
@@ -481,7 +553,7 @@ function exitMatchToMenu(message='You left the match.'){
  const oldChannel=channel;channel=null;if(oldChannel&&oldChannel.open){try{oldChannel.close();}catch{}}
  const oldPeer=peer;peer=null;if(oldPeer&&!oldPeer.destroyed){try{oldPeer.destroy();}catch{}}
  game=null;view=null;roomCode='';isBotGame=false;isHost=false;myId='host';document.body.classList.remove('armageddon');
- pending=null;selectedShip=null;moveSource=null;rotation=0;matchSummaryDismissed=false;showOriginalFleet=false;
+ pending=null;selectedShip=null;moveSource=null;rotation=0;deployPreview=null;fogPreview=null;movePreview=null;matchSummaryDismissed=false;showOriginalFleet=false;
  showReconnectPanel(false);$('testModePanel').classList.add('hidden');$('matchEndOverlay').classList.add('hidden');$('modalCover').classList.add('hidden');
  $('hostCodeArea').classList.add('hidden');$('hostRoomCodeDisplay').textContent='------';$('createRoomBtn').disabled=false;$('joinRoomBtn').disabled=false;$('leaveMatchBtn').disabled=false;
  showScreen('connectScreen');selectMainMenuTab('game');selectMenuTab('multiplayer');setConnection('NOT CONNECTED',false);$('connectMessage').textContent=message;
@@ -562,10 +634,37 @@ function acceptTransportChunk(message){
  clearTimeout(state.timer);inboundChunkSets.delete(id);
  try{return JSON.parse(state.parts.join(''));}catch(err){console.warn('Could not reassemble game message:',err);return null;}
 }
+let channelOpenTimer=null,iceRecoveryTimer=null;
+function monitorIceConnection(conn){
+ const pc=conn?.peerConnection;if(!pc||typeof pc.addEventListener!=='function')return;
+ const inspect=()=>{
+  if(channel!==conn)return;
+  const state=pc.iceConnectionState;
+  if(state==='connected'||state==='completed'){
+   if(iceRecoveryTimer){clearTimeout(iceRecoveryTimer);iceRecoveryTimer=null;}
+   setConnection('CONNECTED',true);
+   if(channel?.open)showReconnectPanel(false);
+  }else if(state==='disconnected'){
+   setConnection('NETWORK PAUSED',false);
+   if(iceRecoveryTimer)clearTimeout(iceRecoveryTimer);
+   iceRecoveryTimer=setTimeout(()=>{
+    if(channel===conn&&pc.iceConnectionState==='disconnected'&&!isBotGame)
+     showReconnectPanel(true,'The mobile network paused the connection. Restore internet access or reconnect with the same room code.');
+   },10000);
+  }else if(state==='failed'){
+   setConnection('LINK INTERRUPTED',false);
+   if(!isBotGame)showReconnectPanel(true,'The WebRTC route failed. Reconnect with the same six-character room code; the host keeps the match state.');
+  }
+ };
+ pc.addEventListener('iceconnectionstatechange',inspect);
+ inspect();
+}
 function attachChannel(conn){
+ if(channelOpenTimer){clearTimeout(channelOpenTimer);channelOpenTimer=null;}
  channel=conn;
- conn.on('open',()=>{if(channel!==conn)return;setConnection('CONNECTED',true);$('connectMessage').textContent='Peer-to-peer link established.';showReconnectPanel(false);if(!isHost){send({type:'hello',name:$('playerName').value.trim()||'Captain'});}else if(game){sendSnapshot();}});
- conn.on('close',()=>{if(channel!==conn||leaveInProgress)return;setConnection(isHost?'WAITING FOR OPPONENT':'DISCONNECTED',false);if(!isBotGame)showReconnectPanel(true,isHost?'Your room remains available with the same code. Ask your opponent to enter it again.':'Your connection closed. Enter the same room code to resume the match.');});
+ channelOpenTimer=setTimeout(()=>{if(channel===conn&&!conn.open){setConnection('CONNECTING…',false);if(!isBotGame)showReconnectPanel(true,'The mobile connection is taking longer than expected. Keep this page open, or retry with the same room code.');}},35000);
+ conn.on('open',()=>{if(channel!==conn)return;if(channelOpenTimer){clearTimeout(channelOpenTimer);channelOpenTimer=null;}setConnection('CONNECTED',true);$('connectMessage').textContent='Peer-to-peer link established.';showReconnectPanel(false);monitorIceConnection(conn);if(!isHost){send({type:'hello',name:$('playerName').value.trim()||'Captain'});}else if(game){sendSnapshot();}});
+ conn.on('close',()=>{if(channel!==conn||leaveInProgress)return;if(channelOpenTimer){clearTimeout(channelOpenTimer);channelOpenTimer=null;}if(iceRecoveryTimer){clearTimeout(iceRecoveryTimer);iceRecoveryTimer=null;}setConnection(isHost?'WAITING FOR OPPONENT':'DISCONNECTED',false);if(!isBotGame)showReconnectPanel(true,isHost?'Your room remains available with the same code. Ask your opponent to enter it again.':'Your connection closed. Enter the same room code to resume the match.');});
  conn.on('error',err=>{if(channel!==conn)return;setConnection('LINK ERROR',false);handlePeerError(err);});
  conn.on('data',m=>{
   if(channel!==conn)return;
@@ -595,7 +694,7 @@ function waitForPeerOpen(candidate){return new Promise(resolve=>{let settled=fal
 async function createHostPeer(){
  if(typeof window.Peer!=='function')throw new Error('PeerJS could not load. Check your internet connection and refresh the page.');
  for(let attempt=0;attempt<12;attempt++){
-  const candidateCode=makeRoomCode(),candidate=new window.Peer(candidateCode,{debug:0}),result=await waitForPeerOpen(candidate);
+  const candidateCode=makeRoomCode(),candidate=new window.Peer(candidateCode,peerOptions()),result=await waitForPeerOpen(candidate);
   if(result.ok){bindHostPeer(candidate,result.id);return;}
   candidate.destroy();if(result.err?.type!=='unavailable-id')throw result.err||new Error('Could not reserve a room code.');
  }
@@ -603,7 +702,7 @@ async function createHostPeer(){
 }
 async function createHostPeerWithCode(code){
  if(typeof window.Peer!=='function')throw new Error('PeerJS could not load. Check your internet connection and refresh the page.');
- const candidate=new window.Peer(code,{debug:0}),result=await waitForPeerOpen(candidate);
+ const candidate=new window.Peer(code,peerOptions()),result=await waitForPeerOpen(candidate);
  if(!result.ok){candidate.destroy();throw result.err||new Error('Could not restore the host room.');}
  bindHostPeer(candidate,result.id);return;
 }
@@ -1075,12 +1174,22 @@ function finishTurn(g,pid,skipped=false,timedOut=false){
 // ---------------------------------------------------------------------------
 function handleChat(pid,text){const t=String(text||'').trim().slice(0,180);if(!t||!game)return;addEvent(game,`${game.players[pid].name}: ${t}`,'normal',null,pid);syncGame();}
 function applyBoardGrid(element){
- if(!element)return;const n=boardSize(),compact=window.matchMedia?.('(max-width: 700px)').matches;
- element.style.gridTemplateColumns=`${compact?17:22}px repeat(${n},minmax(0,1fr))`;
+ if(!element)return;
+ const n=boardSize(),width=window.innerWidth,compact=width<=700,axis=compact?17:22;
+ element.style.gridTemplateColumns=`${axis}px repeat(${n},minmax(0,1fr))`;
  element.style.gridTemplateRows=`${compact?17:20}px repeat(${n},minmax(0,1fr))`;
+ // On very narrow phones, keep the densest configurable boards large enough
+ // to tap. Their containing panel scrolls horizontally instead of shrinking
+ // every cell down to a tiny target or forcing the entire page to overflow.
+ const gap=width<=420?1:compact?2:3,padding=width<=420?4:compact?5:7;
+ const minimumCell=width<=380?(n>=14?19:n>=12?20:0):0;
+ element.style.minWidth=minimumCell?`${axis+n*minimumCell+n*gap+2*padding+2}px`:'100%';
 }
-let deployPreview=null,fogPreview=null;
+let deployPreview=null,fogPreview=null,movePreview=null;
+function isCoarseTouch(){return !!(window.matchMedia?.('(hover: none) and (pointer: coarse)').matches||navigator.maxTouchPoints>0);}
+function pointerIsMouse(event){return event?.pointerType==='mouse'||event?.pointerType==='pen';}
 function clearDeployPreview(){deployPreview=null;document.querySelectorAll('#deployBoard .preview-valid,#deployBoard .preview-invalid').forEach(cell=>cell.classList.remove('preview-valid','preview-invalid'));}
+function clearMovePreview(){movePreview=null;document.querySelectorAll('#ownBoard .preview-move-valid,#ownBoard .preview-move-invalid').forEach(cell=>cell.classList.remove('preview-move-valid','preview-move-invalid'));}
 function updateDeployPreview(x,y){
  const board=$('deployBoard');if(!board||!selectedShip||!view)return;
  board.querySelectorAll('.preview-valid,.preview-invalid').forEach(cell=>cell.classList.remove('preview-valid','preview-invalid'));
@@ -1088,6 +1197,19 @@ function updateDeployPreview(x,y){
  const valid=points.every(([dx,dy])=>inBounds(x+dx,y+dy)&&!shipAt(p,x+dx,y+dy));
  for(const [dx,dy] of points){const cell=board.querySelector(`[data-x="${x+dx}"][data-y="${y+dy}"]`);if(cell)cell.classList.add(valid?'preview-valid':'preview-invalid');}
  deployPreview={x,y,valid};
+}
+function updateMovePreview(x,y){
+ const board=$('ownBoard');if(!board||pending?.target!=='move'||!pending.shipSelected||!view)return;
+ board.querySelectorAll('.preview-move-valid,.preview-move-invalid').forEach(cell=>cell.classList.remove('preview-move-valid','preview-move-invalid'));
+ const ship=view.you.ships.find(candidate=>candidate.id===pending.shipId);if(!ship)return;
+ const minX=Math.min(...ship.cells.map(cell=>cell.x)),minY=Math.min(...ship.cells.map(cell=>cell.y));
+ const dx=x-minX,dy=y-minY,inst=view.you.inventory.find(item=>item.id===pending.instance);
+ const allowed=inst?.type==='reposition'||inst?.type==='moveAny';
+ const others=view.you.ships.filter(candidate=>candidate.id!==ship.id).flatMap(candidate=>candidate.cells);
+ const cells=ship.cells.map(cell=>({x:cell.x+dx,y:cell.y+dy}));
+ const valid=(dx!==0||dy!==0)&&(allowed||(Math.abs(dx)<=1&&Math.abs(dy)<=1))&&cells.every(cell=>cell.x>=0&&cell.y>=0&&cell.x<boardSize()&&cell.y<boardSize()&&!others.some(other=>other.x===cell.x&&other.y===cell.y));
+ for(const cell of cells){const node=board.querySelector(`[data-x="${cell.x}"][data-y="${cell.y}"]`);if(node)node.classList.add(valid?'preview-move-valid':'preview-move-invalid');}
+ movePreview={x,y,valid,shipId:ship.id};
 }
 function clearFogPreview(){fogPreview=null;document.querySelectorAll('#ownBoard .preview-fog,#ownBoard .preview-invalid').forEach(cell=>cell.classList.remove('preview-fog','preview-invalid'));}
 function clearVacatedShipMarkers(player,oldCells){const vacated=new Set(oldCells.map(cell=>tileKey(cell.x,cell.y)));player.incoming=(player.incoming||[]).filter(mark=>!vacated.has(tileKey(mark.x,mark.y)));}
@@ -1161,13 +1283,13 @@ function boardMarkup(elId,mode){const p=view.you,e=view.enemy;const own=mode==='
  $(elId).innerHTML=html;applyBoardGrid($(elId));
 }
 function shipSunkLocal(s){const hp=s.hp||1;return s.cells.every(c=>c.damage>=hp);}
-function renderDeploy(){const p=view.you,e=view.enemy;$('deployRoomCode').value=roomCode||'';$('deployRoomCodePanel').classList.toggle('hidden',!roomCode);$('deployRoomCodeTitle').textContent='SIX-CHARACTER ROOM CODE';$('deployRoomCodeHint').textContent=isHost?'Send this code to your opponent so they can join your room.':'You joined with this room code. The host shared it with you.';$('deployRoomCodeStatus').textContent='Room code stays visible here while you set up your fleet.';$('deployCredits').textContent=`${p.credits} CR`;$('deployTitle').textContent=`Fleet deployment — ${p.name}`;$('deploySubtitle').textContent=p.ready?'Your fleet is locked. Waiting for opponent.':view.testMode?'TESTMODE: deploy unlimited free ships.':`Spend your ${view.settings?.startingCredits||150} starting credits. Unspent credits carry over.`;$('deployReadyTag').textContent=p.ready?'READY':'NOT READY';$('deployReadyTag').className='tag';$('readyBtn').disabled=p.ready||p.ships.length===0;$('readyBtn').textContent=p.ready?'Fleet locked':'Lock fleet & ready';$('opponentReadyStatus').textContent=e.ready?`${e.name} is ready.`:`Waiting for ${e.name} to ready their fleet…`;$('deployHint').textContent=selectedShip?`Selected ${SHIPS[selectedShip].name}. ${rotation%2===0?'Horizontal':'Vertical'} placement. Move over the board to preview.`:'Select a vessel, then move over the board to preview its placement.';$('rotationLabel').textContent=rotation%2===0?'HORIZONTAL':'VERTICAL';
+function renderDeploy(){const p=view.you,e=view.enemy;$('deployRoomCode').value=roomCode||'';$('deployRoomCodePanel').classList.toggle('hidden',!roomCode);$('deployRoomCodeTitle').textContent='SIX-CHARACTER ROOM CODE';$('deployRoomCodeHint').textContent=isHost?'Send this code to your opponent so they can join your room.':'You joined with this room code. The host shared it with you.';$('deployRoomCodeStatus').textContent='Room code stays visible here while you set up your fleet.';$('deployCredits').textContent=`${p.credits} CR`;$('deployTitle').textContent=`Fleet deployment — ${p.name}`;$('deploySubtitle').textContent=p.ready?'Your fleet is locked. Waiting for opponent.':view.testMode?'TESTMODE: deploy unlimited free ships.':`Spend your ${view.settings?.startingCredits||150} starting credits. Unspent credits carry over.`;$('deployReadyTag').textContent=p.ready?'READY':'NOT READY';$('deployReadyTag').className='tag';$('readyBtn').disabled=p.ready||p.ships.length===0;$('readyBtn').textContent=p.ready?'Fleet locked':'Lock fleet & ready';$('opponentReadyStatus').textContent=e.ready?`${e.name} is ready.`:`Waiting for ${e.name} to ready their fleet…`;$('deployHint').textContent=selectedShip?`Selected ${SHIPS[selectedShip].name}. ${rotation%2===0?'Horizontal':'Vertical'} placement. ${isCoarseTouch()?'Tap a starting tile to preview, then tap it again to place.':'Move over the board to preview, then click to place.'}`:(isCoarseTouch()?'Select a vessel, then tap a starting tile to preview its placement.':'Select a vessel, then move over the board to preview its placement.');$('rotationLabel').textContent=rotation%2===0?'HORIZONTAL':'VERTICAL';
  $('shipChoices').innerHTML=Object.entries(SHIPS).map(([id,s])=>{const owned=p.ships.filter(x=>x.type===id).length,disabled=p.ready||(!view.testMode&&(p.credits<s.cost||(s.classic&&owned>0)));return `<button class="ship-choice ${selectedShip===id?'selected':''}" data-ship="${id}" ${disabled?'disabled':''}><strong>${esc(s.name)}</strong><span class="price">${view.testMode?'FREE · TESTMODE':`${s.cost} CR ${s.classic?'· UNIQUE':''}`}</span><span class="micro">${s.shape.length} tiles · ${esc(s.description)}</span></button>`;}).join('');
  const html=buildDeployBoard(p);$('deployBoard').innerHTML=html;applyBoardGrid($('deployBoard'));if(deployPreview&&selectedShip)updateDeployPreview(deployPreview.x,deployPreview.y);
 }
 function buildDeployBoard(p){const n=boardSize();let h='<div class="axis"></div>';for(let x=0;x<n;x++)h+=`<div class="axis">${String.fromCharCode(65+x)}</div>`;for(let y=0;y<n;y++){h+=`<div class="axis">${y+1}</div>`;for(let x=0;x<n;x++){const s=shipAt(p,x,y);h+=`<button class="cell ${s?'occupied':''}" data-board="deploy" data-x="${x}" data-y="${y}" title="${s?esc(SHIPS[s.type].name):coord(x,y)}" ${p.ready?'disabled':''}><span class="glyph">${s?'▰':''}</span></button>`;}}return h;}
 function renderGame(){const p=view.you,e=view.enemy,active=view.active===view.myId;const canRevealOriginal=view.phase==='over'&&Array.isArray(e.originalFleet);$('originalFleetToggleWrap').classList.toggle('hidden',!canRevealOriginal);$('originalFleetToggle').checked=!!showOriginalFleet&&canRevealOriginal;$('originalFleetLegend').classList.toggle('hidden',!showOriginalFleet||!canRevealOriginal);const banner=$('gameTurnBanner');banner.classList.toggle('victory',!!view.winner&&view.winner===view.myId);banner.classList.toggle('defeat',!!view.winner&&view.winner!==view.myId);$('turnLabel').textContent=view.winner?(view.winner===view.myId?'VICTORY — ENEMY FLEET DESTROYED':'DEFEAT — YOUR FLEET WAS SUNK'):active?'YOUR TURN':`${e.name.toUpperCase()} IS MOVING`;$('turnSubLabel').textContent=view.winner?(view.winner===view.myId?'The seas are yours.':'Your fleet has been defeated.'):(active?`${p.shotsLeft} attack${p.shotsLeft===1?'':'s'} remaining · You can shop and use items before firing.`:'Waiting for your opponent to finish their turn.');$('gameCredits').textContent=`${p.credits} CR`;$('turnNumber').textContent=`YOUR TURN ${p.turns+1} · ROUND ${view.round}`;$('armageddonTag').classList.toggle('hidden',!view.armageddon);$('silencedTag').classList.toggle('hidden',!(p.silencedTurns>0));$('silencedTag').textContent=`🔇 SILENCED · ${p.silencedTurns||0} TURN${p.silencedTurns===1?'':'S'}`;$('turnTimerCaption').textContent=view.armageddon?'ARMAGEDDON CLOCK':'TURN TIMER';$('enemyBoardLegendLabel').textContent=`${String.fromCharCode(64+boardSize())} / 1–${boardSize()}`;$('ownBoardTitle').textContent=`${p.name} · Fleet`;$('enemyBoardTitle').textContent=`${e.name} · Waters`;$('ownBoardSub').textContent=pending&&(pending.target==='own'||pending.target==='move')?pending.label:'Friendly waters';$('enemyBoardSub').textContent=pending&&pending.target==='enemy'?pending.label:active?(pending?'Finish selecting your item target.':hasItemView('crackshot')?'💥 Crackshot active · All your hits bypass Shields and cannot be repaired.':'Select an enemy tile to fire.'):'Targeting is locked until your turn.';$('ownPanel').classList.toggle('active-target',!!pending&&(pending.target==='own'||pending.target==='move'));$('enemyPanel').classList.toggle('active-target',!!pending&&pending.target==='enemy'||active&&!pending);
- boardMarkup('ownBoard','own');boardMarkup('enemyBoard','enemy');if(fogPreview&&pending?.target==='own')updateFogPreview(fogPreview.x,fogPreview.y);$('chatLog').innerHTML=view.events.map(ev=>`<div class="event ${ev.kind||''}"><span class="time">${esc(ev.at||'')}</span>${esc(ev.text)}</div>`).join('');$('chatLog').scrollTop=$('chatLog').scrollHeight;$('logCount').textContent=`${view.events.length} EVENTS`;
+ boardMarkup('ownBoard','own');boardMarkup('enemyBoard','enemy');if(fogPreview&&pending?.target==='own')updateFogPreview(fogPreview.x,fogPreview.y);if(movePreview&&pending?.target==='move'&&pending.shipSelected)updateMovePreview(movePreview.x,movePreview.y);$('chatLog').innerHTML=view.events.map(ev=>`<div class="event ${ev.kind||''}"><span class="time">${esc(ev.at||'')}</span>${esc(ev.text)}</div>`).join('');$('chatLog').scrollTop=$('chatLog').scrollHeight;$('logCount').textContent=`${view.events.length} EVENTS`;
  renderShop();renderInventory();updateTurnTimer();$('endTurnBtn').disabled=!active||p.shotsLeft>0||!!view.winner;$('endTurnBtn').textContent=active?(p.shotsLeft>0?`Fire ${p.shotsLeft} more`:'End turn'):'Opponent turn';}
 function renderShop(){
  const p=view.you,maxItems=view.settings?.inventorySlots||5,inventoryFull=p.inventory.length>=maxItems,shopClosed=!!view.armageddon;
@@ -1616,7 +1738,7 @@ async function connectGuestToRoom(code){
  if(channel&&!channel.open)channel=null;
  if(peer&&!peer.destroyed)peer.destroy();peer=null;
  if(typeof window.Peer!=='function')throw new Error('PeerJS could not load. Check your internet connection and refresh the page.');
- const nextPeer=new window.Peer();peer=nextPeer;watchPeerErrors(nextPeer);
+ const nextPeer=new window.Peer(undefined,peerOptions());peer=nextPeer;watchPeerErrors(nextPeer);
  nextPeer.on('open',()=>{if(peer!==nextPeer)return;const conn=nextPeer.connect(code,{reliable:true,serialization:'json'});attachChannel(conn);});
 }
 async function reconnectFromCode(){
@@ -1636,6 +1758,17 @@ async function reconnectFromCode(){
  finally{$('reconnectBtn').disabled=false;}
 }
 $('reconnectBtn').onclick=reconnectFromCode;$('leaveMatchBtn').onclick=leaveCurrentMatch;
+function resumeMobileNetwork(reason=''){
+ if(!navigator.onLine){setConnection('OFFLINE',false);return;}
+ if(peer&&!peer.destroyed&&peer.disconnected){
+  try{setConnection('RESTORING SIGNAL',false);peer.reconnect();}catch(err){console.warn('Peer signaling resume failed:',err);}
+ }
+ if(channel?.open&&reason)send({type:'mobileResume',at:Date.now()});
+}
+window.addEventListener('online',()=>resumeMobileNetwork('online'));
+window.addEventListener('offline',()=>{if(game&&!isBotGame){setConnection('OFFLINE',false);showReconnectPanel(true,'Your device is offline. The match remains saved by the host; reconnect when internet returns.');}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')resumeMobileNetwork('visible');});
+
 $('reconnectRoomCode').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);});
 $('copyReconnectCodeBtn').onclick=()=>copyRoomCode($('reconnectStatus'));
 $('joinRoomCode').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6);});
@@ -1679,12 +1812,12 @@ $('testGiveCreditsBtn').onclick=()=>{const amount=Math.floor(Number($('testCredi
 $('undoShipBtn').onclick=()=>act({type:'deployRemove'});
 $('readyBtn').onclick=()=>{selectedShip=null;act({type:'ready'});};
 $('shipChoices').onclick=e=>{const b=e.target.closest('[data-ship]');if(!b)return;selectedShip=b.dataset.ship;clearDeployPreview();renderDeploy();};
-$('deployBoard').addEventListener('pointerover',e=>{const b=e.target.closest('[data-x]');if(b&&selectedShip)updateDeployPreview(+b.dataset.x,+b.dataset.y);});$('deployBoard').addEventListener('pointerleave',clearDeployPreview);$('deployBoard').onclick=e=>{const b=e.target.closest('[data-x]');if(!b)return;const x=+b.dataset.x,y=+b.dataset.y;if(selectedShip){const previewReady=!!deployPreview&&deployPreview.x===x&&deployPreview.y===y;if(!previewReady){updateDeployPreview(x,y);return;}if(deployPreview?.valid){clearDeployPreview();act({type:'deployPlace',ship:selectedShip,x,y,rot:rotation});}}};
-function onBoardClick(e){const b=e.target.closest('[data-x]');if(!b)return;const x=+b.dataset.x,y=+b.dataset.y;if(b.dataset.board==='own'){if(pending&&pending.target==='own'){const inst=view.you.inventory.find(item=>item.id===pending.instance);if(inst?.type==='fogcast'){const previewReady=!!fogPreview&&fogPreview.x===x&&fogPreview.y===y;if(!previewReady){updateFogPreview(x,y);return;}if(!fogPreview?.valid)return;}act({type:'useTarget',instance:pending.instance,x,y});pending=null;clearFogPreview();render();}else if(pending&&pending.target==='move'){if(!pending.shipSelected){const found=view.you.ships.find(s=>s.cells.some(c=>c.x===x&&c.y===y));if(found&&!shipSunkLocal(found)){act({type:'useTarget',instance:pending.instance,x,y});pending.shipSelected=true;pending.label=`${ITEMS[view.you.inventory.find(i=>i.id===pending.instance)?.type]?.name||'Move'}: now click the new starting tile.`;render();}}else{act({type:'moveTarget',x,y});pending=null;render();}}}else if(b.dataset.board==='enemy'){if(pending&&pending.target==='enemy'){act({type:'useTarget',instance:pending.instance,x,y});pending=null;render();}else if(!pending){act({type:'attack',x,y});}}}
-$('ownBoard').addEventListener('pointerover',e=>{const b=e.target.closest('[data-x]');if(b&&pending?.target==='own')updateFogPreview(+b.dataset.x,+b.dataset.y);});$('ownBoard').addEventListener('pointerleave',clearFogPreview);$('ownBoard').onclick=onBoardClick;$('enemyBoard').onclick=onBoardClick;
-$('inventoryList').onclick=e=>{const use=e.target.closest('[data-use]'),sell=e.target.closest('[data-sell]');if(sell){if(pending&&pending.instance===sell.dataset.sell){cancelPending();}act({type:'sell',instance:sell.dataset.sell});return;}if(!use)return;const inst=view.you.inventory.find(i=>i.id===use.dataset.use);if(!inst)return;const it=ITEMS[inst.type];if(it.target){clearFogPreview();if(it.target==='move'||it.target==='moveAny'){pending={instance:inst.id,target:'move',label:`${it.name}: click one of your ships, then click its new starting tile.`};}else pending={instance:inst.id,target:it.target==='own'?'own':'enemy',label:`${it.name}: select a ${it.target==='own'?'friendly':'enemy'} tile to use this item.`};render();}else{act({type:'useImmediate',instance:inst.id});}};
+$('deployBoard').addEventListener('pointerover',e=>{if(!pointerIsMouse(e))return;const b=e.target.closest('[data-x]');if(b&&selectedShip)updateDeployPreview(+b.dataset.x,+b.dataset.y);});$('deployBoard').addEventListener('pointerleave',e=>{if(pointerIsMouse(e)&&!isCoarseTouch())clearDeployPreview();});$('deployBoard').onclick=e=>{const b=e.target.closest('[data-x]');if(!b)return;const x=+b.dataset.x,y=+b.dataset.y;if(selectedShip){const previewReady=!!deployPreview&&deployPreview.x===x&&deployPreview.y===y;if(!previewReady){updateDeployPreview(x,y);$('deployHint').textContent=deployPreview.valid?'Placement preview shown. Tap the same highlighted tile again to place the ship.':'That placement is invalid. Choose another starting tile.';return;}if(deployPreview?.valid){clearDeployPreview();act({type:'deployPlace',ship:selectedShip,x,y,rot:rotation});}}};
+function onBoardClick(e){const b=e.target.closest('[data-x]');if(!b)return;const x=+b.dataset.x,y=+b.dataset.y;if(b.dataset.board==='own'){if(pending&&pending.target==='own'){const inst=view.you.inventory.find(item=>item.id===pending.instance);if(inst?.type==='fogcast'){const previewReady=!!fogPreview&&fogPreview.x===x&&fogPreview.y===y;if(!previewReady){updateFogPreview(x,y);$('ownBoardSub').textContent=fogPreview.valid?'Fog preview shown. Tap the same tile again to confirm.':'That 3×3 area does not fit on the board.';return;}if(!fogPreview?.valid)return;}act({type:'useTarget',instance:pending.instance,x,y});pending=null;clearFogPreview();render();}else if(pending&&pending.target==='move'){if(!pending.shipSelected){const found=view.you.ships.find(s=>s.cells.some(c=>c.x===x&&c.y===y));if(found&&!shipSunkLocal(found)){act({type:'useTarget',instance:pending.instance,x,y});pending.shipSelected=true;pending.shipId=found.id;pending.label=`${ITEMS[view.you.inventory.find(i=>i.id===pending.instance)?.type]?.name||'Move'}: preview the new starting tile, then tap it again to confirm.`;clearMovePreview();render();}}else{const previewReady=!!movePreview&&movePreview.x===x&&movePreview.y===y&&movePreview.shipId===pending.shipId;if(!previewReady){updateMovePreview(x,y);$('ownBoardSub').textContent=movePreview?.valid?'Move preview shown. Tap the same highlighted tile again to confirm.':'That destination is invalid. Choose another starting tile.';return;}if(movePreview?.valid){act({type:'moveTarget',x,y});pending=null;clearMovePreview();render();}}}else if(!pending){/* Friendly waters are not a firing target. */}}else if(b.dataset.board==='enemy'){if(pending&&pending.target==='enemy'){act({type:'useTarget',instance:pending.instance,x,y});pending=null;render();}else if(!pending){act({type:'attack',x,y});}}}
+$('ownBoard').addEventListener('pointerover',e=>{if(!pointerIsMouse(e))return;const b=e.target.closest('[data-x]');if(!b)return;if(pending?.target==='own')updateFogPreview(+b.dataset.x,+b.dataset.y);else if(pending?.target==='move'&&pending.shipSelected)updateMovePreview(+b.dataset.x,+b.dataset.y);});$('ownBoard').addEventListener('pointerleave',e=>{if(pointerIsMouse(e)&&!isCoarseTouch()){clearFogPreview();clearMovePreview();}});$('ownBoard').onclick=onBoardClick;$('enemyBoard').onclick=onBoardClick;
+$('inventoryList').onclick=e=>{const use=e.target.closest('[data-use]'),sell=e.target.closest('[data-sell]');if(sell){if(pending&&pending.instance===sell.dataset.sell){cancelPending();}act({type:'sell',instance:sell.dataset.sell});return;}if(!use)return;const inst=view.you.inventory.find(i=>i.id===use.dataset.use);if(!inst)return;const it=ITEMS[inst.type];if(it.target){clearFogPreview();clearMovePreview();if(it.target==='move'||it.target==='moveAny'){pending={instance:inst.id,target:'move',label:`${it.name}: click one of your ships, then click its new starting tile.`};}else pending={instance:inst.id,target:it.target==='own'?'own':'enemy',label:`${it.name}: select a ${it.target==='own'?'friendly':'enemy'} tile to use this item.`};render();}else{act({type:'useImmediate',instance:inst.id});}};
 $('shopList').onclick=e=>{const b=e.target.closest('[data-buy]');if(b)act({type:'buy',slot:b.dataset.buy});};$('rerollBtn').onclick=()=>act({type:'reroll'});$('endTurnBtn').onclick=()=>act({type:'endTurn'});
-$('cancelPendingBtn').onclick=cancelPending;function cancelPending(){if(pending?.target==='move')act({type:'cancelMove'});pending=null;clearFogPreview();render();}
+$('cancelPendingBtn').onclick=cancelPending;function cancelPending(){if(pending?.target==='move')act({type:'cancelMove'});pending=null;clearFogPreview();clearMovePreview();render();}
 $('chatForm').onsubmit=e=>{e.preventDefault();const text=$('chatInput').value.trim();if(!text)return;if(isHost)handleChat(myId,text);else send({type:'chat',text});$('chatInput').value='';};
 
 // Modal helper kept for future content additions; core selection is board-based.
@@ -1695,6 +1828,14 @@ $('viewOpponentInventoryBtn').onclick=()=>{matchSummaryDismissed=false;renderMat
 function setOriginalFleetVisible(enabled){showOriginalFleet=!!enabled&&view?.phase==='over'&&Array.isArray(view?.enemy?.originalFleet);$('originalFleetToggle').checked=showOriginalFleet;$('matchEndFleetToggle').checked=showOriginalFleet;if(view?.phase==='over'){boardMarkup('enemyBoard','enemy');}}
 $('originalFleetToggle').onchange=e=>{setOriginalFleetVisible(e.target.checked);renderMatchEnd();};
 $('matchEndFleetToggle').onchange=e=>{setOriginalFleetVisible(e.target.checked);renderGame();};
+function refreshResponsiveBoards(){
+ for(const id of ['deployBoard','ownBoard','enemyBoard']){const element=$(id);if(element&&!element.classList.contains('hidden'))applyBoardGrid(element);}
+}
+let responsiveFrame=0;
+function scheduleResponsiveRefresh(){if(responsiveFrame)cancelAnimationFrame(responsiveFrame);responsiveFrame=requestAnimationFrame(()=>{responsiveFrame=0;refreshResponsiveBoards();});}
+window.addEventListener('resize',scheduleResponsiveRefresh,{passive:true});
+window.visualViewport?.addEventListener('resize',scheduleResponsiveRefresh,{passive:true});
+window.addEventListener('orientationchange',()=>setTimeout(scheduleResponsiveRefresh,120),{passive:true});
 
 // Guest's locally pending ship/move selection is mirrored to host via actions.
 // Host stores the move selection transiently after the first click.
