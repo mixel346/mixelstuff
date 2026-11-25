@@ -216,13 +216,13 @@ const SHIPS = {
   classic_cruiser:   {name:'Classic Cruiser',cost:30, shape:[[0,0],[1,0],[2,0]], classic:true, description:'Can only be placed once.'},
   classic_submarine: {name:'Classic Submarine',cost:20, shape:[[0,0],[1,0],[2,0]], classic:true, description:'Can only be placed once.'},
   classic_destroyer: {name:'Classic Destroyer',cost:10, shape:[[0,0],[1,0]], classic:true, description:'Can only be placed once.'},
-  fiberglass_carrier:{name:'Fiberglass Carrier',cost:30,shape:[[0,0],[1,0],[2,0],[3,0],[4,0]],fiberglass:true,description:'Sinks immediately when any tile is hit.'},
+  fiberglass_carrier:{name:'Fiberglass Carrier',cost:30,shape:[[0,0],[1,0],[2,0],[3,0],[4,0]],fiberglass:true,description:'Sinks immediately when any tile is hit. While alive, grants +20 credits per turn.'},
   torus:             {name:'Torus',cost:60,shape:[[0,0],[1,0],[2,0],[0,1],[2,1],[0,2],[1,2],[2,2]],description:'Eight-tile 3×3 ring.'},
   one_basket:        {name:'One Basket',cost:144,shape:[[0,0],[1,0],[2,0],[3,0],[4,0],[0,1],[1,1],[2,1],[3,1],[4,1],[0,2],[1,2],[2,2],[3,2],[4,2]],description:'A massive 3×5 vessel.'},
   fishing_boat:     {name:'Fishing Boat',cost:7,shape:[[0,0]],description:'A tiny 1-tile boat.'},
   cargo_vessel:     {name:'Cargo Vessel',cost:30,shape:[[0,0],[1,0],[2,0]],moving:true,description:'Moves one valid square every other turn. If hit, it skips its next scheduled move.'},
   cruise_ship:      {name:'Cruise Ship',cost:25,shape:[[0,0],[1,0]],hp:2,description:'Every tile must be hit twice.'},
-  pirate_ship:      {name:'Pirate Ship',cost:70,shape:[[0,0],[1,0],[2,0],[0,1],[1,1],[2,1]],pirate:true,description:'Every other own turn, repairs one eligible damaged tile.'},
+  pirate_ship:      {name:'Ship of Theseus',cost:70,shape:[[0,0],[1,0],[0,1],[1,1]],pirate:true,description:'A 2×2 vessel. Every other own turn, repairs one eligible damaged tile.'},
   support_cruiser:  {name:'Support Cruiser',cost:35,shape:[[0,0],[1,0],[2,0]],support:true,description:'While alive, grants +15 credits per turn.'},
   party_barge:      {name:'Party Barge',cost:10,shape:[[0,0],[1,0],[2,0]],party:true,description:'Chat announces when it is hit.'},
   ragebaiter:       {name:'Ragebaiter',cost:25,shape:[[0,0],[1,0],[1,1],[2,1]],description:'Four-tile Z shape.'},
@@ -231,7 +231,7 @@ const SHIPS = {
 const ITEMS = {
   cash_boost:{name:'Cash Boost',icon:'🫰',rarity:'Common',cost:30,type:'Passive',desc:'+12 credits gained per turn.'},
   peek:{name:'Peek',icon:'👀',rarity:'Common',cost:40,type:'Active',desc:'Reveal a random item in your opponent’s inventory. Maximum two per player.',max:2,target:false},
-  shield:{name:'Shield',icon:'🛡️',rarity:'Common',cost:40,type:'Active',desc:'Add a shield layer to one friendly tile. Shields stack.',target:'own'},
+  shield:{name:'Shield',icon:'🛡️',rarity:'Common',cost:40,type:'Active',desc:'Place one shield on a friendly tile. A tile can only have one active shield at a time.',target:'own'},
   invest:{name:'Invest',icon:'📦',rarity:'Common',cost:50,type:'Passive',desc:'In 3 of your turns, gain 100 credits and remove this item.',timer:3},
   meteor:{name:'Meteor',icon:'☄️',rarity:'Common',cost:50,type:'Active',desc:'Hit one random tile on the enemy board.',target:false},
   repair:{name:'Repair',icon:'🛠️',rarity:'Common',cost:50,type:'Active',desc:'Restore one destroyed tile on a ship that is not fully sunk. A tile can only be repaired once.',target:'own'},
@@ -533,7 +533,8 @@ async function createHostPeerWithCode(code){
  bindHostPeer(candidate,result.id);return;
 }
 function viewFor(g,pid){const you=g.players[pid],opp=g.players[other(pid)];const sunk=opp.ships.filter(shipSunk).map(s=>({type:s.type,name:shipName(s),cells:s.cells.map(c=>({x:c.x,y:c.y})),disguiseType:s.disguiseType}));return {phase:g.phase,settings:normalizeMatchSettings(g.settings||DEFAULT_MATCH_SETTINGS),armageddon:!!g.armageddon,myId:pid,active:g.active,round:g.round,turnEndsAt:g.turnEndsAt||0,winner:g.winner,geraldClaimed:g.geraldClaimed,testMode:pid==='host'&&!!g.testMode,events:g.events.filter(e=>!e.to||e.to.includes(pid)),you:{id:you.id,name:you.name,credits:you.credits,ships:you.ships,inventory:you.inventory,ready:you.ready,turns:you.turns,shop:you.shop,shopUnlocked:you.shopUnlocked,rerollCost:10+you.rerollCount*10,rerollsThisTurn:you.rerollsThisTurn,attacks:you.attacks,incoming:you.incoming,decoys:you.decoys,fog:you.fog,skipTurns:you.skipTurns,tariffTurns:you.tariffTurns,shotsLeft:you.shotsLeft,turnItemsBought:you.turnItemsBought,peekBought:you.peekBought,cheatDeathUsed:you.cheatDeathUsed,acquiredUnique:you.acquiredUnique,attackedThisTurn:you.attackedThisTurn,pirateTokenArmed:you.pirateTokenArmed},enemy:{id:opp.id,name:opp.name,ready:opp.ready,attacks:opp.attacks,sunkShips:sunk,turns:opp.turns,inventory:g.winner?opp.inventory.map(inst=>({type:inst.type})):null,originalFleet:g.winner?cloneFleetRecord(g.originalFleets?.[other(pid)]):null,curseMultiplier:Math.pow(1.5,countItem(opp,'poseidons_curse'))}};}
-function sendSnapshot(){if(!game)return;view=viewFor(game,myId);render();if(isHost){persistHostSession();send({type:'snapshot',view:viewFor(game,'guest')});}}
+function normalizeShieldLayers(g){if(!g?.players)return;for(const player of Object.values(g.players))for(const ship of player.ships||[])for(const cell of ship.cells||[]){const spent=Math.max(0,Number(cell.shieldHits)||0),total=Math.max(spent,Number(cell.shields)||0);cell.shieldHits=spent;cell.shields=Math.min(total,spent+1);}}
+function sendSnapshot(){if(!game)return;normalizeShieldLayers(game);view=viewFor(game,myId);render();if(isHost){persistHostSession();send({type:'snapshot',view:viewFor(game,'guest')});}}
 function syncGame(){sendSnapshot();}
 
 // ---------------------------------------------------------------------------
@@ -689,7 +690,7 @@ function useTarget(g,pid,instanceId,x,y,shipId){
  if(['shield','repair','surrender','trojan_vessel'].includes(type)){
   const ship=shipAt(p,x,y),decoy=p.decoys.find(d=>d.x===x&&d.y===y);
   if(type==='shield'){
-   if(ship){const c=cellAt(ship,x,y);if(c.damage>=(ship.hp||1))privateEvent(g,pid,'A Shield cannot be placed over a destroyed tile.');else{c.shields++;success=true;privateEvent(g,pid,'🛡️ Shield placed on your vessel tile.','good');}}
+   if(ship){const c=cellAt(ship,x,y);if(c.damage>=(ship.hp||1))privateEvent(g,pid,'A Shield cannot be placed over a destroyed tile.');else if(c.shields>c.shieldHits)privateEvent(g,pid,'That tile already has an active Shield. Shields cannot stack.');else{c.shields=Math.max(c.shields,c.shieldHits)+1;success=true;privateEvent(g,pid,'🛡️ Shield placed on your vessel tile.','good');}}
    else privateEvent(g,pid,'A Shield must be placed on one of your ship tiles.');
   }
   if(type==='repair'){
@@ -786,7 +787,7 @@ function resolveShot(g,attackerId,targetId,x,y,opts={}){
   if(!opts.unexplainedImpact)addEvent(g,`${attacker.name} fired again at the already-damaged tile ${coord(x,y)}.`,'normal');
   return {hit:true,sunk:false,result};
  }
- // Crackshot bypasses every shield layer for this strike; ordinary shots still consume shields.
+ // Crackshot bypasses the tile's single active shield for this strike; ordinary shots consume it.
  if(!crackshotHit&&cell.shieldHits<cell.shields){
   cell.shieldHits++;result='shield';hit=true;
   if(!opts.unexplainedImpact)addEvent(g,`🛡️ ${attacker.name} hit a shield at ${coord(x,y)}. The shield absorbed the hit.`,'good');
@@ -878,8 +879,8 @@ function finishTurn(g,pid,skipped=false,timedOut=false){
      if(cells.every(c=>inBounds(c.x,c.y)&&!occupied.some(o=>o.x===c.x&&o.y===c.y))){clearVacatedShipMarkers(p,ship.cells);ship.cells=cells;ship.hasMoved=true;break;}
     }
    }
-   // Pirate Ship repairs one eligible tile every second own turn.
-   if((p.turns+1)%2===0){for(const ship of p.ships.filter(s=>s.type==='pirate_ship'&&!shipSunk(s))){const c=ship.cells.find(c=>c.damage>0&&!c.repaired&&!c.crackshot);if(c){c.damage=Math.max(0,(ship.hp||1)-1);c.repaired=true;markIncomingTileRestored(p,c.x,c.y);ship.sunk=false;privateEvent(g,currentPid,'🏴‍☠️ Your Pirate Ship repaired one damaged tile.');}}}
+   // Ship of Theseus repairs one eligible tile every second own turn.
+   if((p.turns+1)%2===0){for(const ship of p.ships.filter(s=>s.type==='pirate_ship'&&!shipSunk(s))){const c=ship.cells.find(c=>c.damage>0&&!c.repaired&&!c.crackshot);if(c){c.damage=Math.max(0,(ship.hp||1)-1);c.repaired=true;markIncomingTileRestored(p,c.x,c.y);ship.sunk=false;privateEvent(g,currentPid,'⚓ Your Ship of Theseus repaired one damaged tile.');}}}
    // Meteor Shower's impact is described generically in the public log.
    const showers=countItem(p,'meteor_shower');for(let i=0;i<showers&&!g.winner;i++)randomEnemyHit(g,currentPid,'');
    if(g.armageddon&&!g.winner)armageddonMeteor(g,currentPid);
@@ -892,8 +893,9 @@ function finishTurn(g,pid,skipped=false,timedOut=false){
    const base=2+Math.floor(2*Math.log(turnNo));
    const cash=12*countItem(p,'cash_boost');
    const support=15*p.ships.filter(s=>s.type==='support_cruiser'&&!shipSunk(s)).length;
+   const fiberglassIncome=20*p.ships.filter(s=>SHIPS[s.type]?.fiberglass&&!shipSunk(s)).length;
    const trust=countItem(p,'trust_fund')*p.ships.filter(s=>!shipSunk(s)).reduce((n,s)=>n+s.cost*5,0);
-   p.credits+=base+cash+support+trust;
+   p.credits+=base+cash+support+fiberglassIncome+trust;
   }
   for(let i=p.inventory.length-1;i>=0;i--){
    const it=p.inventory[i];
@@ -1568,7 +1570,7 @@ async function restoreSavedHostMatch(){
  let saved=null;try{const raw=localStorage.getItem(HOST_SESSION_KEY);if(raw)saved=JSON.parse(raw);}catch{}
  if(!saved||!saved.game||!saved.roomCode||saved.game.winner||!saved.game.players?.host||!saved.game.players?.guest){if(saved?.game?.winner)clearSavedHostSession();return;}
  if(typeof window.Peer!=='function')return;
- leaveInProgress=false;stopLeaveTimers();isBotGame=false;isHost=true;myId='host';game=saved.game;game.settings=normalizeMatchSettings(game.settings||DEFAULT_MATCH_SETTINGS);game.armageddon=!!game.armageddon;if(game.round>=100&&!game.armageddon)beginArmageddon(game);
+ leaveInProgress=false;stopLeaveTimers();isBotGame=false;isHost=true;myId='host';game=saved.game;normalizeShieldLayers(game);game.settings=normalizeMatchSettings(game.settings||DEFAULT_MATCH_SETTINGS);game.armageddon=!!game.armageddon;if(game.round>=100&&!game.armageddon)beginArmageddon(game);
  if(game.phase==='battle'&&game.armageddon&&!game.turnEndsAt)game.turnEndsAt=Date.now()+ARMAGEDDON_TURN_DURATION_MS;
  // Migrate a saved match from the previous catalog where Spyware existed.
  for(const pid of ['host','guest']){const player=game.players[pid];delete player.crackshotCharges;player.inventory=(player.inventory||[]).map(inst=>inst.type==='spyware'?{...inst,type:'crackshot'}:inst);}
